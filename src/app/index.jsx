@@ -16,33 +16,29 @@ function GitHubIcon({ className }) {
   )
 }
 
-function CommaIcon({ className }) {
-  return (
-    <svg className={className} viewBox="2 3 42 42" fill="currentColor">
-      <path fillRule="evenodd" clipRule="evenodd" d="M16.6964 40C16.6964 39.2596 16.6385 38.6393 16.7236 38.0415C16.7599 37.7865 17.0575 37.5135 17.3001 37.3595C18.4832 36.6087 19.7684 36.0092 20.8699 35.1481C24.4378 32.3587 26.5526 28.6866 26.6682 23.9166C26.7009 22.5622 26.203 22.2238 25.0654 22.7514C21.7817 24.2746 18.2505 23.3815 16.3659 20.5509C14.3107 17.4636 14.6001 13.3531 17.0626 10.6562C20.2079 7.21156 25.3833 7.10849 28.9522 10.3982C31.09 12.3688 32.1058 14.9132 32.3591 17.8074C33.2084 27.5032 28.3453 35.495 19.4941 39.0057C18.6181 39.353 17.7198 39.6382 16.6964 40Z" />
-    </svg>
-  )
+function AsiusIcon({ className }) {
+  return <img src="/asius-logo.svg" alt="Asius" className={className} />
 }
 
 export default function App() {
   const version = import.meta.env.VITE_PUBLIC_GIT_SHA || 'dev'
-  console.info(`flash.comma.ai version: ${version}`)
+  console.info(`flash.asius.ai version: ${version}`)
   return (
     <div className="h-screen w-screen bg-gray-100">
       <Flash />
       <div className="absolute top-4 right-4 flex items-center gap-6">
-        <a href="https://comma.ai" target="_blank" rel="noopener noreferrer" title="comma.ai" className="text-gray-400 hover:text-[#51ff00] transition-colors">
-          <CommaIcon className="w-12 h-12" />
+        <a href="https://asius.ai" target="_blank" rel="noopener noreferrer" title="asius.ai" className="text-gray-400 hover:text-[#51ff00] transition-colors">
+          <AsiusIcon className="w-12 h-12" />
         </a>
-        <a href="https://discord.comma.ai" target="_blank" rel="noopener noreferrer" title="Discord" className="text-gray-400 hover:text-[#51ff00] transition-colors">
+        <a href="https://discord.asius.ai" target="_blank" rel="noopener noreferrer" title="Discord" className="text-gray-400 hover:text-[#51ff00] transition-colors">
           <DiscordIcon className="w-12 h-12" />
         </a>
-        <a href="https://github.com/commaai/flash" target="_blank" rel="noopener noreferrer" title="GitHub" className="text-gray-400 hover:text-[#51ff00] transition-colors">
+        <a href="https://github.com/asiusai/flash" target="_blank" rel="noopener noreferrer" title="GitHub" className="text-gray-400 hover:text-[#51ff00] transition-colors">
           <GitHubIcon className="w-12 h-12" />
         </a>
       </div>
       <div className="absolute bottom-4 left-4 text-sm text-gray-500">
-        <a href={`https://github.com/commaai/flash/tree/${version}`} target="_blank" className="hover:underline">
+        <a href={`https://github.com/asiusai/flash/tree/${version}`} target="_blank" className="hover:underline">
           {version}
         </a>
       </div>

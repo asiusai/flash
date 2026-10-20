@@ -1,13 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import posthog from 'posthog-js'
-import * as Sentry from '@sentry/react'
 
 import { FlashManager, StepCode, ErrorCode, DeviceType } from '../utils/manager'
-import { useImageManager } from '../utils/image'
 import { isLinux, isWindows } from '../utils/platform'
-import config from '../config'
 
-import comma from '../assets/comma.svg'
+const asius = '/asius-logo.svg'
+const product = '/asius-v0.png'
 import bolt from '../assets/bolt.svg'
 import cable from '../assets/cable.svg'
 import deviceExclamation from '../assets/device_exclamation_c3.svg'
@@ -15,18 +12,13 @@ import deviceQuestion from '../assets/device_question_c3.svg'
 import done from '../assets/done.svg'
 import exclamation from '../assets/exclamation.svg'
 import systemUpdate from '../assets/system_update_c3.svg'
-import qdlPortsThree from '../assets/qdl-ports-three.svg'
-import qdlPortsFour from '../assets/qdl-ports-four.svg'
 import zadigCreateNewDevice from '../assets/zadig_create_new_device.png'
 import zadigForm from '../assets/zadig_form.png'
-import comma3XProduct from '../assets/comma3X.webp'
-import comma4Product from '../assets/four_screen_on.webp'
 
 // All images that need to be preloaded
 const preloadImages = [
-  comma, bolt, cable, deviceExclamation, deviceQuestion, done, exclamation,
-  systemUpdate, qdlPortsThree, qdlPortsFour, zadigCreateNewDevice, zadigForm,
-  comma3XProduct, comma4Product
+  asius, bolt, cable, deviceExclamation, deviceQuestion, done, exclamation,
+  systemUpdate, zadigCreateNewDevice, zadigForm, product
 ]
 
 // Hidden preload component - renders all images offscreen so they're decoded and ready
@@ -57,7 +49,7 @@ function DebugInfo({ error, step, selectedDevice, serial, message, onClose }) {
   const [copied, setCopied] = useState(false)
 
   const getDebugReport = () => {
-    const deviceName = selectedDevice === DeviceType.COMMA_4 ? 'comma four' : selectedDevice === DeviceType.COMMA_3 ? 'comma 3/3X' : 'unknown'
+    const deviceName = selectedDevice ? 'Asius v0' : 'unknown'
     const errorName = Object.keys(ErrorCode).find(k => ErrorCode[k] === error) || 'UNKNOWN'
     const stepName = Object.keys(StepCode).find(k => StepCode[k] === step) || 'UNKNOWN'
 
@@ -87,7 +79,7 @@ function DebugInfo({ error, step, selectedDevice, serial, message, onClose }) {
     if (isLinux && !navigator.usb) sandboxHints.push('WebUSB unavailable - possibly sandboxed')
     const sandbox = sandboxHints.length ? sandboxHints.join(', ') : 'None detected'
 
-    return `## Bug Report - flash.comma.ai
+    return `## Bug Report - flash.asius.ai
 
 **Device:** ${deviceName}
 **Serial:** ${serial || 'N/A'}
@@ -123,9 +115,9 @@ ${consoleLogs.slice(-30).map(l => `[${l.time}] [${l.level}] ${l.message}`).join(
       <div className="flex justify-between items-start mb-3 gap-2">
         <p className="text-gray-600 text-sm">
           Copy this debug info and paste it in{' '}
-          <a href="https://discord.comma.ai" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">Discord</a>
+          <a href="https://discord.asius.ai" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">Discord</a>
           {' '}or{' '}
-          <a href="https://github.com/commaai/flash/issues/new" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">GitHub Issues</a>.
+          <a href="https://github.com/asiusai/flash/issues/new" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">GitHub Issues</a>.
         </p>
         {onClose && (
           <button
@@ -346,11 +338,11 @@ function Stepper({ steps, currentStep, onStepClick }) {
 function LandingPage({ onStart }) {
   return (
     <div className="wizard-screen flex flex-col items-center justify-center h-full gap-8 p-8">
-      <img src={comma} alt="comma" width={80} height={80} />
+      <img src={asius} alt="Asius" width={80} height={80} />
       <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">flash.comma.ai</h1>
+        <h1 className="text-4xl font-bold mb-4">flash.asius.ai</h1>
         <p className="text-xl text-gray-600 max-w-md">
-          Restore your comma device to a fresh factory state
+          Restore your Asius device to a fresh factory state
         </p>
       </div>
       <button
@@ -367,7 +359,7 @@ function LandingPage({ onStart }) {
 const PRODUCT_ID = '9008'
 
 function WindowsZadig({ deviceType, onNext }) {
-  const vendorId = deviceType === DeviceType.COMMA_4 ? '3801' : '05C6'
+  const vendorId = '05C6'
   return (
     <div className="wizard-screen flex flex-col items-center justify-center h-full gap-6 p-8 overflow-y-auto">
       <div className="text-center">
@@ -396,7 +388,7 @@ function WindowsZadig({ deviceType, onNext }) {
           <div >
             <p className="mb-2">Fill in the form:</p>
             <ul className="list-none space-y-1 ml-2 mb-2">
-              <li><span className="text-gray-500 mr-2">a.</span>Name: <code className="bg-gray-200 px-1 rounded">{deviceType === DeviceType.COMMA_4 ? 'comma four' : 'comma 3/3X'}</code></li>
+              <li><span className="text-gray-500 mr-2">a.</span>Name: <code className="bg-gray-200 px-1 rounded">Asius v0</code></li>
               <li><span className="text-gray-500 mr-2">b.</span>USB ID: <code className="bg-gray-200 px-1 rounded">{vendorId}</code> and <code className="bg-gray-200 px-1 rounded">{PRODUCT_ID}</code></li>
             </ul>
             <img src={zadigForm} alt="Zadig Form" className="rounded-lg border border-gray-300" width={460} />
@@ -423,7 +415,6 @@ function WindowsZadig({ deviceType, onNext }) {
 
 // Connect instructions component - shows how to physically connect the device
 function ConnectInstructions({ deviceType, onNext }) {
-  const isCommaFour = deviceType === DeviceType.COMMA_4
 
   return (
     <div className="wizard-screen flex flex-col items-center justify-center h-full gap-6 p-8">
@@ -434,35 +425,20 @@ function ConnectInstructions({ deviceType, onNext }) {
 
       <div className="flex flex-col md:flex-row gap-8 items-center">
         <img
-          src={isCommaFour ? qdlPortsFour : qdlPortsThree}
-          alt={isCommaFour ? "comma four ports" : "comma three and 3X ports"}
+          src={product}
+          alt="Asius v0"
           className="h-48"
        />
 
-        <ol className="text-left space-y-3 text-lg">
-          <li className="flex gap-3">
-            <span className="flex-shrink-0 w-7 h-7 rounded-full bg-[#51ff00] text-black flex items-center justify-center font-bold text-sm">A</span>
-            <span>Unplug the device</span>
-          </li>
-          {!isCommaFour && (
-            <li className="flex gap-3">
-              <span className="flex-shrink-0 w-7 h-7 rounded-full bg-[#51ff00] text-black flex items-center justify-center font-bold text-sm">B</span>
-              <span>Wait for the light on the back to fully turn off</span>
-            </li>
-          )}
-          <li className="flex gap-3">
-            <span className="flex-shrink-0 w-7 h-7 rounded-full bg-[#51ff00] text-black flex items-center justify-center font-bold text-sm">{isCommaFour ? 'B' : 'C'}</span>
-            <span>Connect <strong>port 1</strong> to your computer</span>
-          </li>
-          <li className="flex gap-3">
-            <span className="flex-shrink-0 w-7 h-7 rounded-full bg-[#51ff00] text-black flex items-center justify-center font-bold text-sm">{isCommaFour ? 'C' : 'D'}</span>
-            <span>Connect <strong>port 2</strong> to your computer or a power brick</span>
-          </li>
+        <ol className="text-left space-y-3 text-lg max-w-lg list-decimal pl-6">
+          <li>Disconnect power from Asius v0.</li>
+          <li>Connect the Dragon EDL USB-C port to your computer with a data cable.</li>
+          <li>Connect device power. On a stock Dragon, hold the EDL button while connecting power.</li>
         </ol>
       </div>
 
       <p className="text-gray-500 text-xl">
-        Your device&apos;s screen will remain blank. This is normal.
+        Use the Dragon EDL port, not the Chestnut host port.
       </p>
 
       <button
@@ -520,7 +496,7 @@ function LinuxUnbind({ onNext }) {
 }
 
 // WebUSB connection screen - shows while waiting for user to select device
-function WebUSBConnect({ onConnect }) {
+function WebUSBConnect({ onConnect, ready, flashUboot, setFlashUboot, installOpenpilot, setInstallOpenpilot }) {
   return (
     <div className="wizard-screen flex flex-col items-center justify-center h-full gap-6 p-8">
       <div className="p-8 rounded-full bg-yellow-500">
@@ -532,12 +508,19 @@ function WebUSBConnect({ onConnect }) {
           Click the button below to open the device selector, then choose <code className="px-2 py-0.5 bg-[#51ff00] rounded font-mono text-black font-semibold">QUSB_BULK_CID</code> from the list.
         </p>
       </div>
+      <div className="text-left space-y-3">
+        <label className="flex gap-3 items-center"><input type="checkbox" checked={installOpenpilot} onChange={e => setInstallOpenpilot(e.target.checked)} />Install openpilot with VamOS</label>
+        <label className="flex gap-3 items-center"><input type="checkbox" checked={flashUboot} onChange={e => setFlashUboot(e.target.checked)} />Install or update U-Boot</label>
+        <p className="text-sm text-gray-500">Factory flashing replaces recordings and settings. Device identity is preserved.</p>
+      </div>
       <button
-        onClick={onConnect}
-        className="px-8 py-3 text-xl font-semibold rounded-full bg-[#51ff00] hover:bg-[#45e000] active:bg-[#3acc00] text-black transition-colors"
+        disabled={!ready}
+        onClick={() => onConnect(installOpenpilot ? 'openpilot' : 'base')}
+        className="px-8 py-3 text-xl font-semibold rounded-full bg-[#51ff00] hover:bg-[#45e000] active:bg-[#3acc00] text-black transition-colors disabled:opacity-50"
       >
-        Connect
+        {ready ? 'Connect' : 'Preparing release...'}
       </button>
+      {flashUboot && <button disabled={!ready} onClick={() => onConnect('bootloader')} className="text-gray-600 underline disabled:opacity-50">Update U-Boot only</button>}
     </div>
   )
 }
@@ -550,33 +533,23 @@ function DevicePicker({ onSelect }) {
     <div className="wizard-screen flex flex-col items-center justify-center h-full gap-8 p-8">
       <div className="text-center">
         <h2 className="text-3xl font-bold mb-2">Which device are you flashing?</h2>
-        <p className="text-xl text-gray-600">Select your comma device</p>
+        <p className="text-xl text-gray-600">Select your Asius device</p>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-6">
         <button
-          onClick={() => setSelected(DeviceType.COMMA_3)}
+          onClick={() => setSelected(DeviceType.ASIUS_V0)}
           className={`flex flex-col items-center gap-4 px-8 py-6 rounded-xl border-2 transition-colors ${
-            selected === DeviceType.COMMA_3
+            selected === DeviceType.ASIUS_V0
               ? 'border-[#51ff00] bg-[#51ff00]/10'
               : 'border-gray-300 hover:border-gray-400'
           }`}
         >
-          <img src={comma3XProduct} alt="comma three or comma 3X" className="h-32 object-contain" />
-          <span className="text-xl font-semibold">comma three<br/>comma 3X</span>
+          <img src={product} alt="" className="h-32 object-contain" />
+          <span className="text-xl font-semibold">Asius v0 UFS</span>
         </button>
 
-        <button
-          onClick={() => setSelected(DeviceType.COMMA_4)}
-          className={`flex flex-col items-center gap-4 px-8 py-6 rounded-xl border-2 transition-colors ${
-            selected === DeviceType.COMMA_4
-              ? 'border-[#51ff00] bg-[#51ff00]/10'
-              : 'border-gray-300 hover:border-gray-400'
-          }`}
-        >
-          <img src={comma4Product} alt="comma four" className="h-32 object-contain" />
-          <span className="text-xl font-semibold">comma four</span>
-        </button>
+
       </div>
 
       <button
@@ -599,7 +572,7 @@ function getWizardSteps(selectedDevice) {
   const steps = ['Device']
   if (isWindows) steps.push('Driver')
   steps.push('Connect')
-  if (isLinux && selectedDevice === DeviceType.COMMA_3) steps.push('Unbind')
+  if (isLinux && selectedDevice === DeviceType.ASIUS_V0) steps.push('Unbind')
   steps.push('Flash')
   return steps
 }
@@ -624,78 +597,36 @@ export default function Flash() {
   const [serial, setSerial] = useState(null)
   const [selectedDevice, setSelectedDevice] = useState(null)
   const [wizardScreen, setWizardScreen] = useState('landing') // 'landing', 'device', 'zadig', 'connect', 'unbind', 'webusb', 'flash'
-  const reportSentRef = useRef(false)
+  const [ready, setReady] = useState(false)
+  const [backup, setBackup] = useState(null)
+  const [bootOnly, setBootOnly] = useState(false)
+  const [installOpenpilot, setInstallOpenpilot] = useState(true)
+  const [flashUboot, updateFlashUboot] = useState(() => {
+    try { return localStorage.getItem('flash-uboot') === '1' } catch { return false }
+  })
+  const setFlashUboot = (value) => {
+    updateFlashUboot(value)
+    try { localStorage.setItem('flash-uboot', value ? '1' : '0') } catch { /* Storage can be unavailable. */ }
+  }
 
   const qdlManager = useRef(null)
-  const imageManager = useImageManager()
 
   // Build steps based on current platform and selected device
   const wizardSteps = getWizardSteps(selectedDevice)
   const wizardStep = screenToStep[wizardScreen] ? wizardSteps.indexOf(screenToStep[wizardScreen]) : -1
 
   useEffect(() => {
-    if (!imageManager.current) return
-
-    fetch(config.loader.url)
-      .then((res) => res.arrayBuffer())
-      .then((programmer) => {
-        // Create QDL manager with callbacks that update React state
-        qdlManager.current = new FlashManager(programmer, {
-          onStepChange: setStep,
-          onMessageChange: setMessage,
-          onProgressChange: setProgress,
-          onErrorChange: setError,
-          onConnectionChange: setConnected,
-          onSerialChange: setSerial,
-        })
-
-        // Initialize the manager
-        return qdlManager.current.initialize(imageManager.current)
-      })
-      .catch((err) => {
-        console.error('Error initializing Flash manager:', err)
-        setError(ErrorCode.UNKNOWN)
-      })
-  }, [config, imageManager.current])
-
-  // Helper to send a single pass/fail summary
-  function sendSessionSummary(result) {
-    if (reportSentRef.current) return
-    reportSentRef.current = true
-
-    const errorName = Object.keys(ErrorCode).find(k => ErrorCode[k] === error) || 'NONE'
-    const stepName = Object.keys(StepCode).find(k => StepCode[k] === step) || 'UNKNOWN'
-
-    // PostHog
-    posthog.capture('flash_session', {
-      result,
-      serial,
-      device_type: selectedDevice,
-      error_code: errorName,
-      step: stepName,
+    let active = true
+    const update = fn => value => { if (active) fn(value) }
+    qdlManager.current = new FlashManager({
+      onStepChange: update(setStep), onMessageChange: update(setMessage),
+      onProgressChange: update(setProgress), onErrorChange: update(setError),
+      onConnectionChange: update(setConnected), onSerialChange: update(setSerial),
+      onReadyChange: update(setReady), onBackupChange: update(setBackup),
     })
-
-    // Sentry
-    Sentry.captureMessage('flash_session', {
-      level: result === 'pass' ? 'info' : 'error',
-      tags: { result, serial, device_type: selectedDevice, error_code: errorName, step: stepName },
-      extra: { console_tail: consoleLogs.slice(-200) },
-    })
-  }
-
-  // Send report on failure
-  useEffect(() => {
-    if (error !== ErrorCode.NONE && !reportSentRef.current) {
-      sendSessionSummary('fail')
-    }
-  }, [error])
-
-  // Send report on success
-  useEffect(() => {
-    if (step === StepCode.DONE && error === ErrorCode.NONE && !reportSentRef.current) {
-      sendSessionSummary('pass')
-    }
-  }, [step, error])
+    qdlManager.current.initialize()
+    return () => { active = false }
+  }, [])
 
   // Transition to flash screen when connected
   useEffect(() => {
@@ -727,8 +658,8 @@ export default function Flash() {
 
   // Handle connect instructions next
   const handleConnectNext = () => {
-    // On Linux with comma 3/3X, need to unbind qcserial BEFORE showing WebUSB picker
-    if (isLinux && selectedDevice === DeviceType.COMMA_3) {
+    // On Linux with Asius v0, need to unbind qcserial BEFORE showing WebUSB picker
+    if (isLinux && selectedDevice === DeviceType.ASIUS_V0) {
       setWizardScreen('unbind')
     } else {
       setWizardScreen('webusb')
@@ -741,8 +672,10 @@ export default function Flash() {
   }
 
   // Handle WebUSB connect button
-  const handleWebUSBConnect = () => {
-    qdlManager.current?.start()
+  const handleWebUSBConnect = (choice) => {
+    setBootOnly(choice === 'bootloader')
+    setWizardScreen('flash')
+    qdlManager.current?.start(choice, flashUboot)
   }
 
   // Handle going back in wizard
@@ -819,32 +752,32 @@ export default function Flash() {
     return (
       <div className="relative h-full">
         <Stepper steps={wizardSteps} currentStep={wizardStep} onStepClick={handleWizardBack} />
-        <WebUSBConnect onConnect={handleWebUSBConnect} />
+        <WebUSBConnect onConnect={handleWebUSBConnect} ready={ready} flashUboot={flashUboot} setFlashUboot={setFlashUboot} installOpenpilot={installOpenpilot} setInstallOpenpilot={setInstallOpenpilot} />
       </div>
     )
   }
 
-  const uiState = steps[step] || {}
+  const uiState = { ...steps[step] }
   if (error) {
     Object.assign(uiState, errors[ErrorCode.UNKNOWN], errors[error])
   }
   let { status, description, bgColor = 'bg-gray-400', icon = bolt, iconStyle = 'invert', hideRetry = false, showDiscordHelp = false } = uiState
 
-  // Add qcserial hint for Linux + comma 3/3X only
-  if (error === ErrorCode.LOST_CONNECTION && isLinux && selectedDevice === DeviceType.COMMA_3) {
+  // Add qcserial hint for Linux + Asius v0 only
+  if (error === ErrorCode.LOST_CONNECTION && isLinux && selectedDevice === DeviceType.ASIUS_V0) {
     description += ' Did you forget to unbind the device from qcserial?'
   }
 
   // Build Discord help link based on device type
-  const discordChannel = selectedDevice === DeviceType.COMMA_4 ? 'hw-four' : 'hw-three-3x'
+  const discordChannel = 'Asius support'
   const discordLink = showDiscordHelp && (
-    <> If the problem persists, join <a href="https://discord.comma.ai" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline font-semibold">#{discordChannel}</a> on Discord for help.</>
+    <> If the problem persists, join <a href="https://discord.asius.ai" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline font-semibold">#{discordChannel}</a> on Discord for help.</>
   )
 
 
   let title
   if (message && !error) {
-    title = message + '...'
+    title = message
     if (progress >= 0) {
       title += ` (${(progress * 100).toFixed(0)}%)`
     }
@@ -865,7 +798,7 @@ export default function Flash() {
   const canGoBack = step === StepCode.CONNECTING && !connected
 
   return (
-    <div id="flash" className="wizard-screen relative flex flex-col gap-8 justify-center items-center h-full pt-16 pb-12 overflow-y-auto overflow-x-hidden">
+    <div id="flash" data-phase={error ? 'error' : step === StepCode.DONE ? 'done' : 'running'} className="wizard-screen relative flex flex-col gap-8 justify-center items-center h-full pt-16 pb-12 overflow-y-auto overflow-x-hidden">
       {wizardStep >= 0 && (
         <Stepper
           steps={wizardSteps}
@@ -885,9 +818,9 @@ export default function Flash() {
       <div className="w-full max-w-3xl px-8 transition-opacity duration-300" style={{ opacity: progress === -1 ? 0 : 1 }}>
         <LinearProgress value={progress * 100} barColor={bgColor} />
       </div>
-      <span className="text-3xl font-mono font-light">{title}</span>
+      <span id="flash-status" className="text-3xl font-mono font-light">{title}</span>
       <span className="text-xl px-8 max-w-xl text-center">
-        {description}{discordLink}
+        {error && message ? message : step === StepCode.DONE && bootOnly ? 'U-Boot is verified. Disconnect the PC cable and restart the device.' : description}{discordLink}
         {error !== ErrorCode.NONE && hideRetry && !showDebugInfo && (
           <button
             onClick={() => setShowDebugInfo(true)}
@@ -905,6 +838,7 @@ export default function Flash() {
           Retry
         </button>
       )}
+      {backup && <a href={backup.url} download={backup.name} className="text-blue-600 underline">Download NOR backup</a>}
       {connected && <DeviceState serial={serial} />}
       {error !== ErrorCode.NONE && (!hideRetry || showDebugInfo) && (
         <DebugInfo

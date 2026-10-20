@@ -1,5 +1,5 @@
 {
-  "name": "@commaai/flash",
+  "name": "@asiusai/flash",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -7,39 +7,44 @@
     "dev": "vite",
     "build": "vite build",
     "start": "vite preview",
-    "test": "vitest"
+    "test": "vitest run",
+    "check": "tsc --noEmit",
+    "device-smoke": "node scripts/device-smoke.mjs",
+    "device-identify": "node scripts/device-identify.mjs"
   },
   "engines": {
     "node": ">=20.11.0"
   },
   "dependencies": {
-    "@commaai/qdl": "git+https://github.com/commaai/qdl.js.git#21d7be79fa5178f253d32a0879bd8bdd4fa37e30",
-    "@fontsource-variable/inter": "^5.2.5",
-    "@fontsource-variable/jetbrains-mono": "^5.2.5",
-    "@sentry/react": "^10.32.1",
-    "posthog-js": "^1.310.1",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "xz-decompress": "^0.2.2"
+    "@fontsource-variable/inter": "5.2.5",
+    "@fontsource-variable/jetbrains-mono": "5.2.5",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "xz-decompress": "0.2.3",
+    "lzma": "2.3.2"
   },
   "devDependencies": {
-    "@tailwindcss/typography": "^0.5.16",
-    "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^16.3.0",
-    "@types/react": "^18.3.20",
-    "@types/react-dom": "^18.3.6",
-    "@vitejs/plugin-react": "^4.3.4",
-    "autoprefixer": "10.4.21",
-    "jsdom": "^26.0.0",
-    "postcss": "^8.5.3",
-    "tailwindcss": "^3.4.17",
-    "vite": "^6.2.6",
-    "vite-svg-loader": "^5.1.0",
-    "vitest": "^3.1.1"
+    "@tailwindcss/typography": "0.5.20",
+    "@testing-library/jest-dom": "6.6.3",
+    "@testing-library/react": "16.3.0",
+    "@types/react": "18.3.20",
+    "@types/react-dom": "18.3.6",
+    "@vitejs/plugin-react": "5.1.2",
+    "autoprefixer": "10.6.1",
+    "jsdom": "26.0.0",
+    "postcss": "8.5.31",
+    "tailwindcss": "3.4.17",
+    "vite": "6.4.4",
+    "vitest": "4.1.11",
+    "typescript": "5.9.3",
+    "@types/w3c-web-usb": "1.0.14",
+    "@types/node": "22.19.15",
+    "playwright": "1.58.2"
   },
   "trustedDependencies": [
-    "@commaai/qdl",
-    "esbuild",
-    "usb"
-  ]
+    "esbuild"
+  ],
+  "overrides": {
+    "postcss-selector-parser": "7.1.7"
+  }
 }
