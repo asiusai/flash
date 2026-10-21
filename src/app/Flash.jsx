@@ -524,7 +524,7 @@ function WebUSBConnect({ onConnect, ready, flashVamos, setFlashVamos, flashUboot
           <FlashOption checked={flashUboot} onChange={setFlashUboot}>Flash U-Boot</FlashOption>
         </div>
         {!flashVamos && <p className="text-sm text-gray-500">U-Boot alone preserves recordings, settings, and device identity.</p>}
-        {flashVamos && <p className="text-sm text-gray-500">Flashing VamOS replaces recordings and settings, with or without openpilot. Device identity is preserved.</p>}
+        {flashVamos && <p className="text-sm text-gray-500">Flashing VamOS replaces recordings and settings. Device identity is preserved.</p>}
       </div>
       <button
         disabled={!ready || (!flashVamos && !flashUboot)}
