@@ -523,8 +523,8 @@ function WebUSBConnect({ onConnect, ready, flashVamos, setFlashVamos, flashUboot
           <FlashOption checked={flashVamos && installOpenpilot} disabled={!flashVamos} onChange={setInstallOpenpilot}>Flash openpilot</FlashOption>
           <FlashOption checked={flashUboot} onChange={setFlashUboot}>Flash U-Boot</FlashOption>
         </div>
-        {!flashVamos && <p className="text-sm text-gray-500">Flashing openpilot requires VamOS.</p>}
-        {flashVamos && <p className="text-sm text-gray-500">Factory flashing replaces recordings and settings. Device identity is preserved.</p>}
+        {!flashVamos && <p className="text-sm text-gray-500">U-Boot alone preserves recordings, settings, and device identity.</p>}
+        {flashVamos && <p className="text-sm text-gray-500">Flashing VamOS replaces recordings and settings, with or without openpilot. Device identity is preserved.</p>}
       </div>
       <button
         disabled={!ready || (!flashVamos && !flashUboot)}
@@ -612,23 +612,22 @@ function useSavedOption(key, defaultValue) {
   }]
 }
 
-function FlashStats({ stats, done, failed }) {
-  if (stats.elapsedSeconds === undefined) return null
-  const seconds = Math.max(0, Math.floor(stats.elapsedSeconds))
+function duration(seconds = 0) {
+  seconds = Math.max(0, Math.floor(seconds))
   const minutes = Math.floor(seconds / 60)
   const hours = Math.floor(minutes / 60)
-  const duration = `${hours ? `${hours}h ` : ''}${minutes ? `${minutes % 60}m ` : ''}${seconds % 60}s`
+  return `${hours ? `${hours}h ` : ''}${minutes ? `${minutes % 60}m ` : ''}${seconds % 60}s`
+}
+
+function FlashStats({ stats, done, failed }) {
+  if (stats.elapsedSeconds === undefined) return null
+  const rate = value => `${(value / 1_000_000).toFixed(1)} MB/s`
   return (
-    <div className="flex flex-col items-center gap-2 text-center">
-      <div className={`rounded-full px-5 py-2 font-monospace tabular-nums ${done ? 'bg-[#51ff00]/15 text-green-900' : 'bg-black/5 text-gray-700'}`}>
-        <span className="text-sm">{done ? 'Flashed in' : failed ? 'Stopped after' : 'Elapsed'}</span>{' '}
-        <span className="text-lg font-semibold">{duration}</span>
-      </div>
-      <div className="flex items-center gap-3 text-sm text-gray-500 font-monospace tabular-nums">
-        {stats.writeBytesPerSecond > 0 && <span title="Average write speed, excluding downloads and verification">{(stats.writeBytesPerSecond / 1_000_000).toFixed(1)} MB/s</span>}
-        {stats.writeBytesPerSecond > 0 && stats.usbConnection && <span aria-hidden="true">·</span>}
-        {stats.usbConnection && <span>{stats.usbConnection}</span>}
-      </div>
+    <div className={`mx-6 flex flex-wrap justify-center items-center gap-x-5 gap-y-2 rounded-2xl px-5 py-3 text-sm font-monospace tabular-nums ${done ? 'bg-[#51ff00]/10' : 'bg-black/5'}`}>
+      <span className="text-gray-600">{done ? 'Total' : failed ? 'Stopped' : 'Elapsed'} <strong className="text-gray-900">{duration(stats.elapsedSeconds)}</strong></span>
+      {stats.downloadBytesPerSecond > 0 && <span className="text-gray-600" title="Download time overlaps USB writes. Speeds are averages; cached downloads can be faster.">Download <strong className="text-gray-900">{duration(stats.downloadSeconds)}</strong> <span className="text-gray-500">{rate(stats.downloadBytesPerSecond)}</span></span>}
+      {stats.writeBytesPerSecond > 0 && <span className="text-gray-600" title="Average write speed, including acknowledgements. Downloads and verification are excluded.">Flash <strong className="text-gray-900">{duration(stats.writeSeconds)}</strong> <span className="text-gray-500">{rate(stats.writeBytesPerSecond)}</span></span>}
+      {stats.usbConnection && <span className="text-gray-500">{stats.usbConnection}</span>}
     </div>
   )
 }

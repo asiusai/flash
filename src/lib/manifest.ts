@@ -128,11 +128,16 @@ async function verifySignature(payload: Uint8Array, signature: Uint8Array): Prom
   if (!valid) throw new Error('Flash manifest signature is invalid')
 }
 
-async function fetchBytes(url: string, cache: RequestCache = 'no-store'): Promise<Uint8Array> {
+export type DownloadTiming = (bytes: number, seconds: number) => void
+
+async function fetchBytes(url: string, cache: RequestCache = 'no-store', onDownload?: DownloadTiming): Promise<Uint8Array> {
+  const started = performance.now()
   const requestUrl = import.meta.env.DEV && url.startsWith('https://vamos.asius.ai/') ? url.replace('https://vamos.asius.ai', '/__updates') : url
   const response = await fetch(requestUrl, { cache, mode: 'cors' })
   if (!response.ok) throw new Error(`Download failed (${response.status})`)
-  return new Uint8Array(await response.arrayBuffer())
+  const bytes = new Uint8Array(await response.arrayBuffer())
+  onDownload?.(bytes.length, (performance.now() - started) / 1000)
+  return bytes
 }
 
 export async function loadSignedBytes(url: string): Promise<Uint8Array> {
@@ -161,8 +166,8 @@ export async function sha256(data: Uint8Array): Promise<string> {
   return Array.from(digest, (byte) => byte.toString(16).padStart(2, '0')).join('')
 }
 
-export async function downloadVerified(url: string, size: number, digest: string): Promise<Uint8Array> {
-  const bytes = await fetchBytes(url, 'force-cache')
+export async function downloadVerified(url: string, size: number, digest: string, onDownload?: DownloadTiming): Promise<Uint8Array> {
+  const bytes = await fetchBytes(url, 'force-cache', onDownload)
   if (bytes.byteLength !== size) throw new Error(`Downloaded object has the wrong size (${bytes.byteLength}, expected ${size})`)
   if ((await sha256(bytes)) !== digest) throw new Error('Downloaded object failed SHA-256 verification')
   return bytes

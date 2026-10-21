@@ -3,6 +3,7 @@ import type { FlashChoice, FlashManifest, FlashOperation, FlashStatus } from '..
 import { compatibleStorage, downloadVerified, loadSignedManifest, loadSignedVamosVersion, sha256 } from './manifest'
 import { NOR_TARGET, QdlDevice, type StorageTarget } from './qdl'
 import { initializePersist } from './persist'
+import type { DownloadTiming } from './manifest'
 import { installUboot, loadBootManifest, prepareUboot, readNorBackup, saveNorBackup } from './uboot'
 
 const OPENPILOT_VAMOS_URL = 'https://raw.githubusercontent.com/asiusai/openpilot/master/openpilot/system/hardware/v0/vamos.json'
@@ -19,9 +20,9 @@ function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error)
 }
 
-async function downloadChunk(chunk: FlashOperation): Promise<Uint8Array> {
+async function downloadChunk(chunk: FlashOperation, onDownload: DownloadTiming): Promise<Uint8Array> {
   if (chunk.operation !== 'program') throw new Error('Expected a program operation')
-  const compressed = await downloadVerified(chunk.url, chunk.compressed_size, chunk.compressed_sha256)
+  const compressed = await downloadVerified(chunk.url, chunk.compressed_size, chunk.compressed_sha256, onDownload)
   const stream = new XzReadableStream(new Blob([new Uint8Array(compressed).buffer]).stream())
   const raw = new Uint8Array(await new Response(stream).arrayBuffer())
   if (raw.byteLength !== chunk.size) throw new Error('Decompressed chunk has the wrong size')
@@ -30,8 +31,8 @@ async function downloadChunk(chunk: FlashOperation): Promise<Uint8Array> {
 }
 
 // Hold at most one future block. Capture rejection immediately while USB is busy.
-function prefetch(chunk: FlashOperation) {
-  return downloadChunk(chunk).then(
+function prefetch(chunk: FlashOperation, onDownload: DownloadTiming) {
+  return downloadChunk(chunk, onDownload).then(
     (data) => ({ data, error: undefined }),
     (error) => ({ data: undefined, error }),
   )
@@ -76,6 +77,8 @@ export class BrowserFlasher {
     let flashStarted: number | undefined
     let ticker: ReturnType<typeof setInterval> | undefined
     let lastStatus: FlashStatus
+    let downloadBytes = 0, downloadSeconds = 0
+    const onDownload: DownloadTiming = (bytes, seconds) => { downloadBytes += bytes; downloadSeconds += seconds }
     const manifest = this.manifest
     const update = (status: FlashStatus) => {
       lastStatus = status
@@ -83,6 +86,9 @@ export class BrowserFlasher {
         version: manifest?.version, serial, backup,
         elapsedSeconds: flashStarted === undefined ? undefined : (performance.now() - flashStarted) / 1000,
         writeBytesPerSecond: device?.writeBytesPerSecond,
+        writeSeconds: device?.writeSeconds,
+        downloadSeconds,
+        downloadBytesPerSecond: downloadSeconds > 0 ? downloadBytes / downloadSeconds : undefined,
         usbConnection: flashStarted === undefined ? undefined : device?.usbConnection,
         ...status,
       })
@@ -109,7 +115,7 @@ export class BrowserFlasher {
         const nor = await readNorBackup(device)
         backup = await saveNorBackup(serial, nor)
         update({ phase: 'identify', detail: 'Checking boot firmware...', progress: 0 })
-        const boot = await prepareUboot(nor, bootManifest)
+        const boot = await prepareUboot(nor, bootManifest, (url, size, hash) => downloadVerified(url, size, hash, onDownload))
         const bootStart = performance.now()
         const detail = boot.changed ? 'Installing U-Boot...' : 'Verifying U-Boot...'
         update({ phase: 'flash', detail, progress: 0 })
@@ -132,7 +138,7 @@ export class BrowserFlasher {
       const updateProgress = (written: number) => update({ phase: 'flash', detail: 'Installing software...', progress: written / bytesTotal })
       const programIndexes = operations.flatMap((op, index) => (op.operation === 'program' ? [index] : []))
       let programIndex = 0
-      let pending = programIndexes.length ? prefetch(operations[programIndexes[0]]) : undefined
+      let pending = programIndexes.length ? prefetch(operations[programIndexes[0]], onDownload) : undefined
       let writtenTotal = 0
       for (const operation of operations) {
         const stepStart = performance.now()
@@ -146,7 +152,7 @@ export class BrowserFlasher {
         const result = await pending
         if (!result?.data) throw result?.error || new Error('Missing image block')
         const nextIndex = programIndexes[++programIndex]
-        pending = nextIndex === undefined ? undefined : prefetch(operations[nextIndex])
+        pending = nextIndex === undefined ? undefined : prefetch(operations[nextIndex], onDownload)
         const writeStart = performance.now()
         timings.push({ step: 'download_wait', seconds: (writeStart - stepStart) / 1000, bytes: operation.compressed_size })
         await device.program(operation.offset, result.data, (bytes) => updateProgress(writtenTotal + bytes))

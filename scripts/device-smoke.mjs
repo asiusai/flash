@@ -1,4 +1,5 @@
 import { chromium } from 'playwright'
+import { resolve } from 'node:path'
 
 const url = process.env.FLASH_URL ?? 'https://flash.asius.ai'
 const choice = process.env.FLASH_CHOICE ?? 'openpilot'
@@ -13,6 +14,17 @@ const browser = await chromium.launch({
 
 try {
   const context = await browser.newContext()
+  // Serve an immutable local production build at the real origin for CORS.
+  // Image downloads and signature checks still use the production services.
+  if (process.env.FLASH_STATIC_DIR) {
+    const directory = resolve(process.env.FLASH_STATIC_DIR)
+    await context.route(`${new URL(url).origin}/**`, route => {
+      const pathname = new URL(route.request().url()).pathname
+      const file = resolve(directory, `.${pathname === '/' ? '/index.html' : pathname}`)
+      if (!file.startsWith(directory + '/')) return route.abort()
+      return route.fulfill({ path: file })
+    })
+  }
   // Test a signed candidate with the production bundle, without a live-reload server.
   if (process.env.FLASH_BOOT_MANIFEST) {
     const candidate = process.env.FLASH_BOOT_MANIFEST
@@ -67,6 +79,8 @@ try {
     const download = await downloadPromise
     await download.saveAs(`${process.env.FLASH_BACKUP_DIR}/${download.suggestedFilename()}`)
   }
+  if (process.env.FLASH_SCREENSHOT) await page.screenshot({ path: process.env.FLASH_SCREENSHOT })
+  console.log('Final screen:', await page.locator('#flash').innerText())
   console.log(JSON.stringify({ wizardSeconds: (Date.now() - started) / 1000, storage, choice }))
   if (process.exitCode !== 0) throw new Error('Browser EDL flash did not complete successfully')
 } finally {

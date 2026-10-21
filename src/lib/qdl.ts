@@ -501,8 +501,11 @@ export class QdlDevice {
 
   get writeBytesPerSecond(): number | undefined {
     const bytes = this.writtenBytes + this.currentWriteBytes
-    const milliseconds = this.writeMilliseconds + (this.writeStarted === undefined ? 0 : performance.now() - this.writeStarted)
-    return bytes > 0 && milliseconds > 0 ? bytes * 1000 / milliseconds : undefined
+    return bytes > 0 && this.writeSeconds > 0 ? bytes / this.writeSeconds : undefined
+  }
+
+  get writeSeconds(): number {
+    return (this.writeMilliseconds + (this.writeStarted === undefined ? 0 : performance.now() - this.writeStarted)) / 1000
   }
 
   async program(offset: number, bytes: Uint8Array, onProgress: (written: number) => void): Promise<void> {

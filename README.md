@@ -28,6 +28,8 @@ Development-only environment overrides cannot replace production manifests or si
 
 Use a desktop Chromium browser with a display.
 For local write tests, build first and use `bun run start`. Do not use a live-reload server.
+Set `FLASH_STATIC_DIR` to an immutable build directory to test local assets at the production origin.
+This retains real release downloads, CORS, and signature checks.
 Set `FLASH_BOOT_MANIFEST` to test a signed candidate recipe through the production bundle.
 Select the intended Dragon in the browser's USB chooser.
 Only UFS modules are supported.
@@ -51,7 +53,8 @@ FLASH_URL=https://flash.asius.ai FLASH_CHOICE=openpilot \
 Use `FLASH_CHOICE=base` for VamOS alone.
 The test records download, write, verification, and total flash times in its console output.
 Verify Linux startup separately after the browser completes.
-Factory flashing preserves the dedicated identity partition. It replaces OS and userdata.
+VamOS flashing replaces the OS and userdata, with or without openpilot. It preserves the dedicated identity partition.
+Openpilot is optional so users can install another fork.
 Manifest version 3 excludes identity storage from all normal erase and write operations.
 The flasher initializes the reserved range only when a valid old GPT has no identity partition.
 A blank GPT can mean an interrupted flash, so it never permits identity erasure.
@@ -65,8 +68,10 @@ Keep that download outside the browser for recovery.
 
 The timer starts after USB selection and includes programmer startup, backups, downloads, writes, verification, and reset.
 It stops at success or failure. Completion does not measure Linux startup.
-The displayed MB/s measures average programmed bytes per write time, including write acknowledgements.
-Downloads and readback verification do not count toward that rate.
+The compact statistics row shows total time, download time and speed, write time and speed, and the USB connection.
+Both speeds are averages. Write time includes acknowledgements, but excludes downloads and readback verification.
+Download time measures image transfers. Cached downloads can be faster.
+Downloads overlap USB writes, so their times do not add up to the total.
 USB 2 or USB 3 comes from the active bulk endpoint packet sizes, not the device's USB capability version.
 
 Signed firmware recipes accept known boot-chain revisions only.

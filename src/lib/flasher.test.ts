@@ -50,7 +50,7 @@ beforeEach(() => {
     connected()
     await pause(1000) // Programmer startup must be included.
   })
-  download.mockImplementation(async () => new Uint8Array(4096))
+  download.mockImplementation(async (_url, _size, _hash, timing) => { timing?.(4096, 0.25); return new Uint8Array(4096) })
   device.program.mockImplementation(async (_offset, bytes, progress) => {
     await pause(1000)
     device.writeBytesPerSecond = bytes.length
@@ -84,7 +84,7 @@ test('keeps block operations under one status and freezes the full timer after r
   expect(device.program).toHaveBeenCalledTimes(2)
   expect(device.verify).toHaveBeenCalledTimes(2)
   expect(new Set(statuses.filter(status => status.phase === 'flash').map(status => status.detail))).toEqual(new Set(['Installing software...']))
-  expect(statuses.at(-1)).toMatchObject({ phase: 'done', elapsedSeconds: 3.7, writeBytesPerSecond: 4096, usbConnection: 'USB 3' })
+  expect(statuses.at(-1)).toMatchObject({ phase: 'done', elapsedSeconds: 3.7, writeBytesPerSecond: 4096, downloadSeconds: 0.5, downloadBytesPerSecond: 16384, usbConnection: 'USB 3' })
   const count = statuses.length
   await vi.advanceTimersByTimeAsync(10000)
   expect(statuses).toHaveLength(count)
@@ -119,4 +119,16 @@ test('U-Boot-only verification leaves UFS alone and has no invented write speed'
   expect(device.selectStorage).not.toHaveBeenCalled()
   expect(statuses.at(-1)).toMatchObject({ phase: 'done', elapsedSeconds: 1.3 })
   expect(statuses.at(-1)?.writeBytesPerSecond).toBeUndefined()
+})
+
+
+test.each([['base', false], ['base', true], ['openpilot', false], ['openpilot', true], ['bootloader', true]] as const)('flashes %s with U-Boot %s', async (choice, uboot) => {
+  const { statuses, flasher } = await prepare()
+  const running = flasher.run(choice, uboot)
+  await vi.advanceTimersByTimeAsync(12000)
+  await running
+  expect(statuses.at(-1)?.phase).toBe('done')
+  expect(boot).toHaveBeenCalledTimes(uboot ? 1 : 0)
+  expect(device.program.mock.calls.map(call => call[0])).toEqual(choice === 'bootloader' ? [] : choice === 'base' ? [0] : [0, 4096])
+  expect(device.erase).toHaveBeenCalledTimes(choice === 'bootloader' ? 0 : 1)
 })

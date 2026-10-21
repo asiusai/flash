@@ -18,14 +18,18 @@ test('write speed includes acknowledgements but excludes time between writes', a
     const device = new QdlDevice(new ArrayBuffer(0), STORAGE_TARGETS[0])
     await device.selectStorage(STORAGE_TARGETS[0])
     expect(device.writeBytesPerSecond).toBeUndefined()
+    expect(device.writeSeconds).toBe(0)
     const bytes = new Uint8Array(4096)
     const samples: (number | undefined)[] = []
     await device.program(0, bytes, () => samples.push(device.writeBytesPerSecond))
     expect(samples).toEqual([4096])
     expect(device.writeBytesPerSecond).toBe(2048)
+    expect(device.writeSeconds).toBe(2)
     now += 5000 // Downloads and verification must not reduce write throughput.
     expect(device.writeBytesPerSecond).toBe(2048)
+    expect(device.writeSeconds).toBe(2)
     await device.program(4096, bytes, () => {})
+    expect(device.writeSeconds).toBe(4)
     expect(device.writeBytesPerSecond).toBe(2048)
   } finally { vi.restoreAllMocks() }
 })
