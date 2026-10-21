@@ -546,7 +546,7 @@ function DevicePicker({ onSelect }) {
           }`}
         >
           <img src={product} alt="" className="h-32 object-contain" />
-          <span className="text-xl font-semibold">Asius v0 UFS</span>
+          <span className="text-xl font-semibold">Asius v0</span>
         </button>
 
 

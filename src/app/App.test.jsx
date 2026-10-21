@@ -19,7 +19,7 @@ afterEach(cleanup)
 function connectScreen() {
   render(<App />)
   fireEvent.click(screen.getByRole('button', { name: 'Start' }))
-  fireEvent.click(screen.getByRole('button', { name: /Asius v0 UFS/ }))
+  fireEvent.click(screen.getByRole('button', { name: 'Asius v0', exact: true }))
   fireEvent.click(screen.getByRole('button', { name: 'Next' }))
   fireEvent.click(screen.getByRole('button', { name: 'Next' }))
 }

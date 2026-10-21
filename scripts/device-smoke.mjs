@@ -31,7 +31,7 @@ try {
   await page.goto(url, { waitUntil: 'networkidle' })
   const started = Date.now()
   await page.getByRole('button', { name: 'Start', exact: true }).click()
-  await page.getByRole('button', { name: `Asius v0 ${storage}`, exact: true }).click()
+  await page.getByRole('button', { name: 'Asius v0', exact: true }).click()
   await page.getByRole('button', { name: 'Next', exact: true }).click()
   await page.getByRole('button', { name: 'Next', exact: true }).click()
   if (await page.getByRole('heading', { name: 'Unbind from qcserial' }).count()) {
