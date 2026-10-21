@@ -189,7 +189,7 @@ const steps = {
   },
   [StepCode.DONE]: {
     status: 'Done',
-    description: 'Your device was flashed successfully!',
+    description: 'You can disconnect your device now.',
     bgColor: 'bg-green-500',
     icon: done,
   },
@@ -298,7 +298,7 @@ function beforeUnloadListener(event) {
 // Stepper/breadcrumb component
 function Stepper({ steps, currentStep, onStepClick }) {
   return (
-    <div className="absolute top-0 left-0 right-0 p-4 flex items-center justify-center gap-2">
+    <div className="absolute top-0 left-0 right-0 p-4 flex items-center justify-center gap-1 sm:gap-2">
       {steps.map((stepName, index) => {
         const isCompleted = index < currentStep
         const isCurrent = index === currentStep
@@ -307,12 +307,12 @@ function Stepper({ steps, currentStep, onStepClick }) {
         return (
           <div key={stepName} className="flex items-center">
             {index > 0 && (
-              <div className={`w-8 h-0.5 mx-1 ${isCompleted ? 'bg-[#51ff00]' : 'bg-gray-300'}`} />
+              <div className={`w-2 sm:w-8 h-0.5 mx-1 ${isCompleted ? 'bg-[#51ff00]' : 'bg-gray-300'}`} />
             )}
             <button
               onClick={() => isClickable && onStepClick(index)}
               disabled={!isClickable}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+              className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
                 isCurrent
                   ? 'bg-[#51ff00] text-black'
                   : isCompleted
@@ -321,7 +321,7 @@ function Stepper({ steps, currentStep, onStepClick }) {
               }`}
             >
               {isCompleted && (
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="hidden sm:block w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               )}
@@ -432,14 +432,10 @@ function ConnectInstructions({ deviceType, onNext }) {
 
         <ol className="text-left space-y-3 text-lg max-w-lg list-decimal pl-6">
           <li>Disconnect power from Asius v0.</li>
-          <li>Connect the Dragon EDL USB-C port to your computer with a data cable.</li>
+          <li>Connect the device's USB-C port to your computer with a data cable.</li>
           <li>Connect device power. On a stock Dragon, hold the EDL button while connecting power.</li>
         </ol>
       </div>
-
-      <p className="text-gray-500 text-xl">
-        Use the Dragon EDL port, not the Chestnut host port.
-      </p>
 
       <button
         onClick={onNext}
@@ -496,7 +492,20 @@ function LinuxUnbind({ onNext }) {
 }
 
 // WebUSB connection screen - shows while waiting for user to select device
-function WebUSBConnect({ onConnect, ready, flashUboot, setFlashUboot, installOpenpilot, setInstallOpenpilot }) {
+function FlashOption({ children, checked, onChange, disabled = false }) {
+  return (
+    <label className={`flex items-center justify-between gap-6 px-5 py-4 ${disabled ? 'opacity-40' : 'cursor-pointer hover:bg-white/60'}`}>
+      <span className="text-lg font-medium">{children}</span>
+      <span className="relative flex shrink-0">
+        <input type="checkbox" className="peer absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0 disabled:cursor-default" checked={checked} disabled={disabled} onChange={e => onChange(e.target.checked)} />
+        <span className="h-7 w-12 rounded-full bg-gray-300 transition-colors peer-checked:bg-[#51ff00] peer-focus-visible:ring-2 peer-focus-visible:ring-black peer-focus-visible:ring-offset-2" />
+        <span className="absolute left-1 top-1 h-5 w-5 rounded-full bg-white shadow-sm transition-transform peer-checked:translate-x-5" />
+      </span>
+    </label>
+  )
+}
+
+function WebUSBConnect({ onConnect, ready, flashVamos, setFlashVamos, flashUboot, setFlashUboot, installOpenpilot, setInstallOpenpilot }) {
   return (
     <div className="wizard-screen flex flex-col items-center justify-center h-full gap-6 p-8">
       <div className="p-8 rounded-full bg-yellow-500">
@@ -508,19 +517,22 @@ function WebUSBConnect({ onConnect, ready, flashUboot, setFlashUboot, installOpe
           Click the button below to open the device selector, then choose <code className="px-2 py-0.5 bg-[#51ff00] rounded font-mono text-black font-semibold">QUSB_BULK_CID</code> from the list.
         </p>
       </div>
-      <div className="text-left space-y-3">
-        <label className="flex gap-3 items-center"><input type="checkbox" checked={installOpenpilot} onChange={e => setInstallOpenpilot(e.target.checked)} />Install openpilot with VamOS</label>
-        <label className="flex gap-3 items-center"><input type="checkbox" checked={flashUboot} onChange={e => setFlashUboot(e.target.checked)} />Install or update U-Boot</label>
-        <p className="text-sm text-gray-500">Factory flashing replaces recordings and settings. Device identity is preserved.</p>
+      <div className="w-full max-w-md text-left space-y-3">
+        <div className="overflow-hidden rounded-2xl border border-gray-300 bg-white/40 divide-y divide-gray-200">
+          <FlashOption checked={flashVamos} onChange={setFlashVamos}>Flash VamOS</FlashOption>
+          <FlashOption checked={flashVamos && installOpenpilot} disabled={!flashVamos} onChange={setInstallOpenpilot}>Flash openpilot</FlashOption>
+          <FlashOption checked={flashUboot} onChange={setFlashUboot}>Flash U-Boot</FlashOption>
+        </div>
+        {!flashVamos && <p className="text-sm text-gray-500">Flashing openpilot requires VamOS.</p>}
+        {flashVamos && <p className="text-sm text-gray-500">Factory flashing replaces recordings and settings. Device identity is preserved.</p>}
       </div>
       <button
-        disabled={!ready}
-        onClick={() => onConnect(installOpenpilot ? 'openpilot' : 'base')}
+        disabled={!ready || (!flashVamos && !flashUboot)}
+        onClick={() => onConnect(flashVamos ? installOpenpilot ? 'openpilot' : 'base' : 'bootloader')}
         className="px-8 py-3 text-xl font-semibold rounded-full bg-[#51ff00] hover:bg-[#45e000] active:bg-[#3acc00] text-black transition-colors disabled:opacity-50"
       >
         {ready ? 'Connect' : 'Preparing release...'}
       </button>
-      {flashUboot && <button disabled={!ready} onClick={() => onConnect('bootloader')} className="text-gray-600 underline disabled:opacity-50">Update U-Boot only</button>}
     </div>
   )
 }
@@ -587,6 +599,40 @@ const screenToStep = {
   flash: 'Flash',
 }
 
+function useSavedOption(key, defaultValue) {
+  const [value, setValue] = useState(() => {
+    try {
+      const saved = localStorage.getItem(key)
+      return saved === null ? defaultValue : saved === '1'
+    } catch { return defaultValue }
+  })
+  return [value, next => {
+    setValue(next)
+    try { localStorage.setItem(key, next ? '1' : '0') } catch { /* Storage can be unavailable. */ }
+  }]
+}
+
+function FlashStats({ stats, done, failed }) {
+  if (stats.elapsedSeconds === undefined) return null
+  const seconds = Math.max(0, Math.floor(stats.elapsedSeconds))
+  const minutes = Math.floor(seconds / 60)
+  const hours = Math.floor(minutes / 60)
+  const duration = `${hours ? `${hours}h ` : ''}${minutes ? `${minutes % 60}m ` : ''}${seconds % 60}s`
+  return (
+    <div className="flex flex-col items-center gap-2 text-center">
+      <div className={`rounded-full px-5 py-2 font-monospace tabular-nums ${done ? 'bg-[#51ff00]/15 text-green-900' : 'bg-black/5 text-gray-700'}`}>
+        <span className="text-sm">{done ? 'Flashed in' : failed ? 'Stopped after' : 'Elapsed'}</span>{' '}
+        <span className="text-lg font-semibold">{duration}</span>
+      </div>
+      <div className="flex items-center gap-3 text-sm text-gray-500 font-monospace tabular-nums">
+        {stats.writeBytesPerSecond > 0 && <span title="Average write speed, excluding downloads and verification">{(stats.writeBytesPerSecond / 1_000_000).toFixed(1)} MB/s</span>}
+        {stats.writeBytesPerSecond > 0 && stats.usbConnection && <span aria-hidden="true">·</span>}
+        {stats.usbConnection && <span>{stats.usbConnection}</span>}
+      </div>
+    </div>
+  )
+}
+
 export default function Flash() {
   const [step, setStep] = useState(StepCode.INITIALIZING)
   const [message, setMessage] = useState('')
@@ -600,14 +646,10 @@ export default function Flash() {
   const [ready, setReady] = useState(false)
   const [backup, setBackup] = useState(null)
   const [bootOnly, setBootOnly] = useState(false)
-  const [installOpenpilot, setInstallOpenpilot] = useState(true)
-  const [flashUboot, updateFlashUboot] = useState(() => {
-    try { return localStorage.getItem('flash-uboot') === '1' } catch { return false }
-  })
-  const setFlashUboot = (value) => {
-    updateFlashUboot(value)
-    try { localStorage.setItem('flash-uboot', value ? '1' : '0') } catch { /* Storage can be unavailable. */ }
-  }
+  const [stats, setStats] = useState({})
+  const [flashVamos, setFlashVamos] = useSavedOption('flash-vamos', true)
+  const [installOpenpilot, setInstallOpenpilot] = useSavedOption('flash-openpilot', true)
+  const [flashUboot, setFlashUboot] = useSavedOption('flash-uboot', false)
 
   const qdlManager = useRef(null)
 
@@ -623,6 +665,7 @@ export default function Flash() {
       onProgressChange: update(setProgress), onErrorChange: update(setError),
       onConnectionChange: update(setConnected), onSerialChange: update(setSerial),
       onReadyChange: update(setReady), onBackupChange: update(setBackup),
+      onStatsChange: update(setStats),
     })
     qdlManager.current.initialize()
     return () => { active = false }
@@ -673,6 +716,7 @@ export default function Flash() {
 
   // Handle WebUSB connect button
   const handleWebUSBConnect = (choice) => {
+    setStats({})
     setBootOnly(choice === 'bootloader')
     setWizardScreen('flash')
     qdlManager.current?.start(choice, flashUboot)
@@ -752,7 +796,7 @@ export default function Flash() {
     return (
       <div className="relative h-full">
         <Stepper steps={wizardSteps} currentStep={wizardStep} onStepClick={handleWizardBack} />
-        <WebUSBConnect onConnect={handleWebUSBConnect} ready={ready} flashUboot={flashUboot} setFlashUboot={setFlashUboot} installOpenpilot={installOpenpilot} setInstallOpenpilot={setInstallOpenpilot} />
+        <WebUSBConnect onConnect={handleWebUSBConnect} ready={ready} flashVamos={flashVamos} setFlashVamos={setFlashVamos} flashUboot={flashUboot} setFlashUboot={setFlashUboot} installOpenpilot={installOpenpilot} setInstallOpenpilot={setInstallOpenpilot} />
       </div>
     )
   }
@@ -778,7 +822,7 @@ export default function Flash() {
   let title
   if (message && !error) {
     title = message
-    if (progress >= 0) {
+    if (progress >= 0 && step === StepCode.FLASH_SYSTEM) {
       title += ` (${(progress * 100).toFixed(0)}%)`
     }
   } else if (error === ErrorCode.STORAGE_SPACE) {
@@ -818,7 +862,8 @@ export default function Flash() {
       <div className="w-full max-w-3xl px-8 transition-opacity duration-300" style={{ opacity: progress === -1 ? 0 : 1 }}>
         <LinearProgress value={progress * 100} barColor={bgColor} />
       </div>
-      <span id="flash-status" className="text-3xl font-mono font-light">{title}</span>
+      <span id="flash-status" className="text-2xl sm:text-3xl px-6 text-center font-monospace font-light">{title}</span>
+      <FlashStats stats={stats} done={!error && step === StepCode.DONE} failed={Boolean(error)} />
       <span className="text-xl px-8 max-w-xl text-center">
         {error && message ? message : step === StepCode.DONE && bootOnly ? 'U-Boot is verified. Disconnect the PC cable and restart the device.' : description}{discordLink}
         {error !== ErrorCode.NONE && hideRetry && !showDebugInfo && (

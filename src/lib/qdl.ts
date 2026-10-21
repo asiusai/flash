@@ -430,6 +430,10 @@ export class QdlDevice {
   private readonly usb = new WebUsbTransport()
   private firehose?: FirehoseClient
   private storage?: StorageInfo
+  private writtenBytes = 0
+  private writeMilliseconds = 0
+  private writeStarted?: number
+  private currentWriteBytes = 0
   serial = 'unknown'
 
   constructor(
@@ -437,8 +441,9 @@ export class QdlDevice {
     private readonly target: StorageTarget,
   ) {}
 
-  async connect(): Promise<void> {
+  async connect(onConnected?: () => void): Promise<void> {
     await this.usb.connect()
+    onConnected?.()
     const sahara = new SaharaClient(this.usb, this.programmer)
     const mode = await sahara.detectMode()
     console.debug(`EDL mode: ${mode}`)
@@ -490,8 +495,30 @@ export class QdlDevice {
     return this.client.target.label
   }
 
-  program(offset: number, bytes: Uint8Array, onProgress: (written: number) => void): Promise<void> {
-    return this.client.program(offset, bytes, onProgress)
+  get usbConnection(): string {
+    return this.usb.connectionLabel
+  }
+
+  get writeBytesPerSecond(): number | undefined {
+    const bytes = this.writtenBytes + this.currentWriteBytes
+    const milliseconds = this.writeMilliseconds + (this.writeStarted === undefined ? 0 : performance.now() - this.writeStarted)
+    return bytes > 0 && milliseconds > 0 ? bytes * 1000 / milliseconds : undefined
+  }
+
+  async program(offset: number, bytes: Uint8Array, onProgress: (written: number) => void): Promise<void> {
+    this.writeStarted = performance.now()
+    this.currentWriteBytes = 0
+    try {
+      await this.client.program(offset, bytes, (written) => {
+        this.currentWriteBytes = written
+        onProgress(written)
+      })
+    } finally {
+      this.writeMilliseconds += performance.now() - this.writeStarted
+      this.writtenBytes += this.currentWriteBytes
+      this.writeStarted = undefined
+      this.currentWriteBytes = 0
+    }
   }
 
   erase(offset: number, size: number): Promise<void> {

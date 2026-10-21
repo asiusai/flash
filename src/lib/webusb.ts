@@ -11,6 +11,17 @@ export class WebUsbTransport {
     return Boolean(this.device?.opened && this.device.configuration?.interfaces[0]?.claimed)
   }
 
+  get connectionLabel(): string {
+    // The active bulk descriptors reflect the link, unlike bcdUSB, which
+    // only describes the device's supported USB specification.
+    const size = this.endpointIn?.packetSize
+    if (size !== this.endpointOut?.packetSize) return 'USB speed unknown'
+    if (size === 1024) return 'USB 3'
+    if (size === 512) return 'USB 2'
+    if (size && [8, 16, 32, 64].includes(size)) return 'USB Full Speed'
+    return 'USB speed unknown'
+  }
+
   async connect(): Promise<void> {
     if (!navigator.usb) throw new Error('WebUSB is not available in this browser')
     const device = await navigator.usb.requestDevice({

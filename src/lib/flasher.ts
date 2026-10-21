@@ -73,8 +73,20 @@ export class BrowserFlasher {
     let serial: string | undefined
     let backup: FlashStatus['backup']
     let device: QdlDevice | undefined
+    let flashStarted: number | undefined
+    let ticker: ReturnType<typeof setInterval> | undefined
+    let lastStatus: FlashStatus
     const manifest = this.manifest
-    const update = (status: FlashStatus) => this.onStatus({ version: manifest?.version, serial, backup, elapsedSeconds: (performance.now() - started) / 1000, ...status })
+    const update = (status: FlashStatus) => {
+      lastStatus = status
+      this.onStatus({
+        version: manifest?.version, serial, backup,
+        elapsedSeconds: flashStarted === undefined ? undefined : (performance.now() - flashStarted) / 1000,
+        writeBytesPerSecond: device?.writeBytesPerSecond,
+        usbConnection: flashStarted === undefined ? undefined : device?.usbConnection,
+        ...status,
+      })
+    }
     const timings: { step: string; seconds: number; bytes?: number }[] = []
     try {
       if (!manifest || !this.programmer || !this.target) throw new Error('The signed release is not ready')
@@ -82,7 +94,13 @@ export class BrowserFlasher {
       const bootRequested = flashUboot || choice === 'bootloader'
       device = new QdlDevice(new Uint8Array(this.programmer).buffer, bootRequested ? NOR_TARGET : this.target)
       // Keep requestDevice inside the button's user activation.
-      await device.connect()
+      await device.connect(() => {
+        // Exclude time in the browser's device chooser. Include programmer
+        // startup, backups, downloads, writes, verification, and reset.
+        flashStarted = performance.now()
+        update({ phase: 'connect', detail: 'Connecting...', progress: 0 })
+        ticker = setInterval(() => update(lastStatus), 500)
+      })
       serial = device.serial
       timings.push({ step: 'connect', seconds: (performance.now() - started) / 1000 })
       if (bootRequested) {
@@ -109,6 +127,9 @@ export class BrowserFlasher {
       }
       const operations = choice === 'bootloader' ? [] : [...manifest.base.operations, ...(choice === 'openpilot' ? manifest.optional_payloads.openpilot.operations : [])]
       const bytesTotal = operations.reduce((sum, op) => sum + (op.operation === 'program' ? op.size : 0), 0)
+      // Downloads, writes, and verification alternate for each block. Show the
+      // overall installation instead of flashing between these brief operations.
+      const updateProgress = (written: number) => update({ phase: 'flash', detail: 'Installing software...', progress: written / bytesTotal })
       const programIndexes = operations.flatMap((op, index) => (op.operation === 'program' ? [index] : []))
       let programIndex = 0
       let pending = programIndexes.length ? prefetch(operations[programIndexes[0]]) : undefined
@@ -116,21 +137,21 @@ export class BrowserFlasher {
       for (const operation of operations) {
         const stepStart = performance.now()
         if (operation.operation === 'erase') {
-          update({ phase: 'flash', detail: 'Erasing device...', progress: writtenTotal / bytesTotal })
+          updateProgress(writtenTotal)
           await device.erase(operation.offset, operation.size)
           timings.push({ step: 'erase', seconds: (performance.now() - stepStart) / 1000 })
           continue
         }
-        update({ phase: 'flash', detail: 'Downloading image...', progress: writtenTotal / bytesTotal })
+        updateProgress(writtenTotal)
         const result = await pending
         if (!result?.data) throw result?.error || new Error('Missing image block')
         const nextIndex = programIndexes[++programIndex]
         pending = nextIndex === undefined ? undefined : prefetch(operations[nextIndex])
         const writeStart = performance.now()
         timings.push({ step: 'download_wait', seconds: (writeStart - stepStart) / 1000, bytes: operation.compressed_size })
-        await device.program(operation.offset, result.data, (bytes) => update({ phase: 'flash', detail: 'Flashing device...', progress: (writtenTotal + bytes) / bytesTotal }))
+        await device.program(operation.offset, result.data, (bytes) => updateProgress(writtenTotal + bytes))
         timings.push({ step: 'write', seconds: (performance.now() - writeStart) / 1000, bytes: operation.size })
-        update({ phase: 'flash', detail: 'Verifying device...', progress: (writtenTotal + operation.size) / bytesTotal })
+        updateProgress(writtenTotal + operation.size)
         const verifyStart = performance.now()
         await device.verify(operation.offset, operation.size, operation.sha256)
         timings.push({ step: 'verify', seconds: (performance.now() - verifyStart) / 1000, bytes: operation.size })
@@ -138,12 +159,13 @@ export class BrowserFlasher {
       }
       update({ phase: 'reboot', detail: 'Finalizing...', progress: 1 })
       await device.reset()
-      console.info('Flash timing', JSON.stringify({ seconds: (performance.now() - started) / 1000, bytes: bytesTotal, timings }))
+      console.info('Flash timing', JSON.stringify({ seconds: (performance.now() - started) / 1000, flashSeconds: flashStarted === undefined ? undefined : (performance.now() - flashStarted) / 1000, bytes: bytesTotal, timings }))
       update({ phase: 'done', detail: 'Your device was flashed successfully!', progress: 1 })
     } catch (error) {
       console.error(error)
       update({ phase: 'error', detail: 'Flashing stopped', progress: 0, error: errorMessage(error) })
     } finally {
+      clearInterval(ticker)
       await device?.close()
       this.running = false
     }

@@ -75,6 +75,8 @@ export type FlashStatus = {
   supportsBaseOnly?: boolean
   version?: string
   elapsedSeconds?: number
+  writeBytesPerSecond?: number
+  usbConnection?: string
   backup?: { url: string; name: string }
   error?: string
 }

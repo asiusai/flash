@@ -1,5 +1,34 @@
 import { describe, expect, test, vi } from 'vitest'
-import { FirehoseClient, NOR_TARGET, targetMatchesStorage, STORAGE_TARGETS, SaharaClient, logMessages, responseAttributes } from './qdl'
+import { FirehoseClient, NOR_TARGET, QdlDevice, targetMatchesStorage, STORAGE_TARGETS, SaharaClient, logMessages, responseAttributes } from './qdl'
+
+test('write speed includes acknowledgements but excludes time between writes', async () => {
+  let now = 0
+  vi.spyOn(performance, 'now').mockImplementation(() => now)
+  vi.spyOn(FirehoseClient.prototype, 'configure').mockResolvedValue(undefined)
+  vi.spyOn(FirehoseClient.prototype, 'getStorageInfo').mockResolvedValue({
+    block_size: 4096, total_blocks: 100, mem_type: 'UFS', manufacturer_id: 0,
+    num_physical: 1, page_size: 4096, prod_name: 'test', serial_num: 0,
+  })
+  vi.spyOn(FirehoseClient.prototype, 'program').mockImplementation(async (_offset, bytes, progress) => {
+    now += 1000
+    progress(bytes.length)
+    now += 1000 // Final acknowledgement also takes time.
+  })
+  try {
+    const device = new QdlDevice(new ArrayBuffer(0), STORAGE_TARGETS[0])
+    await device.selectStorage(STORAGE_TARGETS[0])
+    expect(device.writeBytesPerSecond).toBeUndefined()
+    const bytes = new Uint8Array(4096)
+    const samples: (number | undefined)[] = []
+    await device.program(0, bytes, () => samples.push(device.writeBytesPerSecond))
+    expect(samples).toEqual([4096])
+    expect(device.writeBytesPerSecond).toBe(2048)
+    now += 5000 // Downloads and verification must not reduce write throughput.
+    expect(device.writeBytesPerSecond).toBe(2048)
+    await device.program(4096, bytes, () => {})
+    expect(device.writeBytesPerSecond).toBe(2048)
+  } finally { vi.restoreAllMocks() }
+})
 
 const encode = (value: string) => new TextEncoder().encode(value)
 

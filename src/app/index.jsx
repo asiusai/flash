@@ -26,15 +26,15 @@ export default function App() {
   return (
     <div className="h-screen w-screen bg-gray-100">
       <Flash />
-      <div className="absolute top-4 right-4 flex items-center gap-6">
+      <div className="absolute bottom-3 right-4 lg:bottom-auto lg:top-4 flex items-center gap-3 lg:gap-6">
         <a href="https://asius.ai" target="_blank" rel="noopener noreferrer" title="asius.ai" className="text-gray-400 hover:text-[#51ff00] transition-colors">
-          <AsiusIcon className="w-12 h-12" />
+          <AsiusIcon className="w-8 h-8 lg:w-12 lg:h-12" />
         </a>
         <a href="https://discord.asius.ai" target="_blank" rel="noopener noreferrer" title="Discord" className="text-gray-400 hover:text-[#51ff00] transition-colors">
-          <DiscordIcon className="w-12 h-12" />
+          <DiscordIcon className="w-8 h-8 lg:w-12 lg:h-12" />
         </a>
         <a href="https://github.com/asiusai/flash" target="_blank" rel="noopener noreferrer" title="GitHub" className="text-gray-400 hover:text-[#51ff00] transition-colors">
-          <GitHubIcon className="w-12 h-12" />
+          <GitHubIcon className="w-8 h-8 lg:w-12 lg:h-12" />
         </a>
       </div>
       <div className="absolute bottom-4 left-4 text-sm text-gray-500">

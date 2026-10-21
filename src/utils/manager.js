@@ -25,6 +25,7 @@ export class FlashManager {
       }
       callbacks.onMessageChange?.(status.error || status.detail)
       callbacks.onProgressChange?.(status.progress)
+      callbacks.onStatsChange?.({ elapsedSeconds: status.elapsedSeconds, writeBytesPerSecond: status.writeBytesPerSecond, usbConnection: status.usbConnection })
       if (steps[status.phase] !== undefined) callbacks.onStepChange?.(steps[status.phase])
       if (status.phase === 'ready') callbacks.onReadyChange?.(true)
       if (status.phase === 'error') callbacks.onErrorChange?.(navigator.usb ? ErrorCode.FLASH_SYSTEM_FAILED : ErrorCode.REQUIREMENTS_NOT_MET)

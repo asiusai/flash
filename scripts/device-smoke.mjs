@@ -37,10 +37,10 @@ try {
   if (await page.getByRole('heading', { name: 'Unbind from qcserial' }).count()) {
     await page.getByRole('button', { name: 'Done', exact: true }).click()
   }
-  await page.getByRole('checkbox', { name: 'Install openpilot with VamOS' }).setChecked(choice === 'openpilot')
-  await page.getByRole('checkbox', { name: 'Install or update U-Boot' }).setChecked(choice === 'bootloader' || process.env.FLASH_UBOOT === '1')
-  if (choice === 'bootloader') await page.getByRole('button', { name: 'Update U-Boot only', exact: true }).click()
-  else await page
+  await page.getByRole('checkbox', { name: 'Flash openpilot' }).setChecked(choice === 'openpilot')
+  await page.getByRole('checkbox', { name: 'Flash VamOS' }).setChecked(choice !== 'bootloader')
+  await page.getByRole('checkbox', { name: 'Flash U-Boot' }).setChecked(choice === 'bootloader' || process.env.FLASH_UBOOT === '1')
+  await page
     .getByRole('button', { name: 'Connect', exact: true }).last()
     .click()
 

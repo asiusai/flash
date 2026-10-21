@@ -58,10 +58,16 @@ A blank GPT can mean an interrupted flash, so it never permits identity erasure.
 
 ## Optional U-Boot installation
 
-The U-Boot toggle defaults to off and persists in localStorage.
-Full installation can include U-Boot. `Update U-Boot only` preserves UFS.
+The three flash options persist in localStorage. VamOS and openpilot default to on; U-Boot defaults to off.
+Disable VamOS to flash U-Boot alone. This preserves UFS and excludes openpilot, which requires the VamOS factory image.
 The browser saves a verified 32 MiB NOR backup in IndexedDB and offers its download.
 Keep that download outside the browser for recovery.
+
+The timer starts after USB selection and includes programmer startup, backups, downloads, writes, verification, and reset.
+It stops at success or failure. Completion does not measure Linux startup.
+The displayed MB/s measures average programmed bytes per write time, including write acknowledgements.
+Downloads and readback verification do not count toward that rate.
+USB 2 or USB 3 comes from the active bulk endpoint packet sizes, not the device's USB capability version.
 
 Signed firmware recipes accept known boot-chain revisions only.
 The browser reconstructs retained firmware from the connected board.
