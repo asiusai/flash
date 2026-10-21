@@ -72,7 +72,6 @@ export class BrowserFlasher {
     this.running = true
     const started = performance.now()
     let serial: string | undefined
-    let backup: FlashStatus['backup']
     let device: QdlDevice | undefined
     let flashStarted: number | undefined
     let ticker: ReturnType<typeof setInterval> | undefined
@@ -83,7 +82,7 @@ export class BrowserFlasher {
     const update = (status: FlashStatus) => {
       lastStatus = status
       this.onStatus({
-        version: manifest?.version, serial, backup,
+        version: manifest?.version, serial,
         elapsedSeconds: flashStarted === undefined ? undefined : (performance.now() - flashStarted) / 1000,
         writeBytesPerSecond: device?.writeBytesPerSecond,
         writeSeconds: device?.writeSeconds,
@@ -113,7 +112,7 @@ export class BrowserFlasher {
         update({ phase: 'identify', detail: 'Backing up boot firmware...', progress: 0 })
         const bootManifest = await loadBootManifest()
         const nor = await readNorBackup(device)
-        backup = await saveNorBackup(serial, nor)
+        await saveNorBackup(serial, nor)
         update({ phase: 'identify', detail: 'Checking boot firmware...', progress: 0 })
         const boot = await prepareUboot(nor, bootManifest, (url, size, hash) => downloadVerified(url, size, hash, onDownload))
         const bootStart = performance.now()

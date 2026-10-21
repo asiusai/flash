@@ -625,8 +625,8 @@ function FlashStats({ stats, done, failed }) {
   return (
     <div className={`mx-6 flex flex-wrap justify-center items-center gap-x-5 gap-y-2 rounded-2xl px-5 py-3 text-sm font-monospace tabular-nums ${done ? 'bg-[#51ff00]/10' : 'bg-black/5'}`}>
       <span className="text-gray-600">{done ? 'Total' : failed ? 'Stopped' : 'Elapsed'} <strong className="text-gray-900">{duration(stats.elapsedSeconds)}</strong></span>
-      {stats.downloadBytesPerSecond > 0 && <span className="text-gray-600" title="Download time overlaps USB writes. Speeds are averages; cached downloads can be faster.">Download <strong className="text-gray-900">{duration(stats.downloadSeconds)}</strong> <span className="text-gray-500">{rate(stats.downloadBytesPerSecond)}</span></span>}
-      {stats.writeBytesPerSecond > 0 && <span className="text-gray-600" title="Average write speed, including acknowledgements. Downloads and verification are excluded.">Flash <strong className="text-gray-900">{duration(stats.writeSeconds)}</strong> <span className="text-gray-500">{rate(stats.writeBytesPerSecond)}</span></span>}
+      {stats.downloadBytesPerSecond > 0 && <span className="text-gray-600" title="Average download speed. Cached downloads can be faster.">Download <strong className="text-gray-900">{rate(stats.downloadBytesPerSecond)}</strong></span>}
+      {stats.writeBytesPerSecond > 0 && <span className="text-gray-600" title="Average write speed, including acknowledgements. Downloads and verification are excluded.">Flash <strong className="text-gray-900">{rate(stats.writeBytesPerSecond)}</strong></span>}
       {stats.usbConnection && <span className="text-gray-500">{stats.usbConnection}</span>}
     </div>
   )
@@ -643,7 +643,6 @@ export default function Flash() {
   const [selectedDevice, setSelectedDevice] = useState(null)
   const [wizardScreen, setWizardScreen] = useState('landing') // 'landing', 'device', 'zadig', 'connect', 'unbind', 'webusb', 'flash'
   const [ready, setReady] = useState(false)
-  const [backup, setBackup] = useState(null)
   const [bootOnly, setBootOnly] = useState(false)
   const [stats, setStats] = useState({})
   const [flashVamos, setFlashVamos] = useSavedOption('flash-vamos', true)
@@ -663,7 +662,7 @@ export default function Flash() {
       onStepChange: update(setStep), onMessageChange: update(setMessage),
       onProgressChange: update(setProgress), onErrorChange: update(setError),
       onConnectionChange: update(setConnected), onSerialChange: update(setSerial),
-      onReadyChange: update(setReady), onBackupChange: update(setBackup),
+      onReadyChange: update(setReady),
       onStatsChange: update(setStats),
     })
     qdlManager.current.initialize()
@@ -882,7 +881,6 @@ export default function Flash() {
           Retry
         </button>
       )}
-      {backup && <a href={backup.url} download={backup.name} className="text-blue-600 underline">Download NOR backup</a>}
       {connected && <DeviceState serial={serial} />}
       {error !== ErrorCode.NONE && (!hideRetry || showDebugInfo) && (
         <DebugInfo

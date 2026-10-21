@@ -63,15 +63,13 @@ A blank GPT can mean an interrupted flash, so it never permits identity erasure.
 
 The three flash options persist in localStorage. VamOS and openpilot default to on; U-Boot defaults to off.
 Disable VamOS to flash U-Boot alone. This preserves UFS and excludes openpilot, which requires the VamOS factory image.
-The browser saves a verified 32 MiB NOR backup in IndexedDB and offers its download.
-Keep that download outside the browser for recovery.
+The browser saves a verified 32 MiB NOR backup in IndexedDB before changing U-Boot.
 
 The timer starts after USB selection and includes programmer startup, backups, downloads, writes, verification, and reset.
 It stops at success or failure. Completion does not measure Linux startup.
-The compact statistics row shows total time, download time and speed, write time and speed, and the USB connection.
+The compact statistics row shows total time, download speed, write speed, and the USB connection.
 Both speeds are averages. Write time includes acknowledgements, but excludes downloads and readback verification.
-Download time measures image transfers. Cached downloads can be faster.
-Downloads overlap USB writes, so their times do not add up to the total.
+Cached downloads can be faster. Downloads overlap USB writes.
 USB 2 or USB 3 comes from the active bulk endpoint packet sizes, not the device's USB capability version.
 
 Signed firmware recipes accept known boot-chain revisions only.
@@ -87,5 +85,5 @@ Sign `uboot.json` with the OS release key before publishing it under `bootloader
 Never publish the reference backups.
 Set `UBOOT_REFERENCE_DIR` when running tests to check private firmware fixtures against the CLI-generated output.
 
-For an attended maintenance test, set `FLASH_CHOICE=bootloader` and `FLASH_BACKUP_DIR` before running `device-smoke`.
+For an attended maintenance test, set `FLASH_CHOICE=bootloader` before running `device-smoke`.
 For a full installation with U-Boot, set `FLASH_UBOOT=1`.

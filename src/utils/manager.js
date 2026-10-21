@@ -30,7 +30,6 @@ export class FlashManager {
       if (status.phase === 'ready') callbacks.onReadyChange?.(true)
       if (status.phase === 'error') callbacks.onErrorChange?.(navigator.usb ? ErrorCode.FLASH_SYSTEM_FAILED : ErrorCode.REQUIREMENTS_NOT_MET)
       if (status.serial) callbacks.onSerialChange?.(status.serial)
-      if (status.backup) callbacks.onBackupChange?.(status.backup)
       if (['identify', 'flash', 'reboot', 'done'].includes(status.phase)) callbacks.onConnectionChange?.(true)
     })
   }

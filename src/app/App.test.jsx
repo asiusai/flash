@@ -83,8 +83,8 @@ test('shows elapsed time, measured write speed, USB link, and final duration', (
   expect(screen.getByText('1m 11s')).toBeInTheDocument()
   expect(screen.getByText('17.2 MB/s')).toBeInTheDocument()
   expect(screen.getByText('12.3 MB/s')).toBeInTheDocument()
-  expect(screen.getByText('20s')).toBeInTheDocument()
-  expect(screen.getByText('50s')).toBeInTheDocument()
+  expect(screen.queryByText('20s')).not.toBeInTheDocument()
+  expect(screen.queryByText('50s')).not.toBeInTheDocument()
   expect(screen.getByText('USB 3')).toBeInTheDocument()
   act(() => {
     manager.callbacks.onStepChange(StepCode.DONE)

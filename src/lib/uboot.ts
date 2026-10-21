@@ -166,10 +166,10 @@ export async function prepareUboot(nor: Uint8Array, manifest: BootManifest, down
     expectedNor.set(complete, xbl.offset)
     return { offset: xbl.offset, payload: complete, changed: true, norSha256: await sha256(expectedNor) }
   }
-  throw new Error('This boot firmware revision is not supported. Nothing was written. Keep the NOR backup for recovery.')
+  throw new Error('This boot firmware revision is not supported. Nothing was written.')
 }
 
-export async function saveNorBackup(serial: string, nor: Uint8Array): Promise<{ url: string; name: string }> {
+export async function saveNorBackup(serial: string, nor: Uint8Array): Promise<void> {
   const digest = await sha256(nor)
   const name = `asius-${serial.replace(/[^a-zA-Z0-9-]/g, '_')}-nor-${digest.slice(0, 16)}.bin`
   const database = await new Promise<IDBDatabase>((resolve, reject) => {
@@ -194,7 +194,6 @@ export async function saveNorBackup(serial: string, nor: Uint8Array): Promise<{ 
   } finally {
     database.close()
   }
-  return { name, url: URL.createObjectURL(new Blob([new Uint8Array(nor).buffer], { type: 'application/octet-stream' })) }
 }
 
 export async function readNorBackup(device: QdlDevice): Promise<Uint8Array> {

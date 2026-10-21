@@ -73,12 +73,6 @@ try {
     if (state === 'done' || state === 'error') break
     await page.waitForTimeout(1000)
   }
-  if (process.env.FLASH_BACKUP_DIR && await page.getByRole('link', { name: 'Download NOR backup' }).count()) {
-    const downloadPromise = page.waitForEvent('download')
-    await page.getByRole('link', { name: 'Download NOR backup' }).click()
-    const download = await downloadPromise
-    await download.saveAs(`${process.env.FLASH_BACKUP_DIR}/${download.suggestedFilename()}`)
-  }
   if (process.env.FLASH_SCREENSHOT) await page.screenshot({ path: process.env.FLASH_SCREENSHOT })
   console.log('Final screen:', await page.locator('#flash').innerText())
   console.log(JSON.stringify({ wizardSeconds: (Date.now() - started) / 1000, storage, choice }))

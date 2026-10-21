@@ -80,6 +80,5 @@ export type FlashStatus = {
   downloadBytesPerSecond?: number
   writeBytesPerSecond?: number
   usbConnection?: string
-  backup?: { url: string; name: string }
   error?: string
 }
