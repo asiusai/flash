@@ -1,6 +1,19 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss" source("../");
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --font-sans: "Inter Variable", sans-serif;
+  --font-monospace: "JetBrains Mono Variable", monospace;
+  --background-image-gradient-radial: radial-gradient(var(--tw-gradient-stops));
+  --background-image-gradient-conic: conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops));
+}
+
+/* Retain Tailwind 3's default border color. */
+@layer base {
+  *, ::before, ::after {
+    border-color: var(--color-gray-200, currentColor);
+  }
+}
 
 ::selection {
   background-color: #51ff00;

@@ -18,7 +18,14 @@ bun install --frozen-lockfile
 bun run dev
 bun run test
 bun run build
+bun run security:check
 ```
+
+In the Asius monorepo, Flash is a Bun workspace. Install from the monorepo root and use its lock file.
+Run Flash commands with `bun run --cwd flash <script>` from that root.
+Keep shared dependency versions aligned with the other workspaces.
+This repository's lock file supports standalone public checkouts. Regenerate it in a standalone checkout after dependency changes.
+Use frozen installs and check both dependency trees before publishing.
 
 The development server proxies R2 downloads through `/__updates`.
 Production uses R2 directly.

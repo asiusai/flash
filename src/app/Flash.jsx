@@ -122,7 +122,7 @@ ${consoleLogs.slice(-30).map(l => `[${l.time}] [${l.level}] ${l.message}`).join(
         {onClose && (
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 flex-shrink-0"
+            className="text-gray-400 hover:text-gray-600 shrink-0"
             title="Hide debug info"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -131,12 +131,12 @@ ${consoleLogs.slice(-30).map(l => `[${l.time}] [${l.level}] ${l.message}`).join(
           </button>
         )}
       </div>
-      <pre className="bg-gray-900 text-gray-100 p-3 rounded text-xs overflow-x-auto max-h-32 sm:max-h-48 font-mono debug-scrollbar whitespace-pre-wrap break-all">
+      <pre className="bg-gray-900 text-gray-100 p-3 rounded-sm text-xs overflow-x-auto max-h-32 sm:max-h-48 font-mono debug-scrollbar whitespace-pre-wrap break-all">
         {getDebugReport()}
       </pre>
       <button
         onClick={handleCopy}
-        className="mt-3 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm rounded transition-colors"
+        className="mt-3 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm rounded-sm transition-colors"
       >
         {copied ? 'Copied!' : 'Copy Debug Info'}
       </button>
@@ -369,36 +369,36 @@ function WindowsZadig({ deviceType, onNext }) {
 
       <div className="max-w-2xl space-y-6 text-lg">
         <div className="flex gap-4">
-          <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[#51ff00] text-black flex items-center justify-center font-bold text-base">1</span>
+          <span className="shrink-0 w-8 h-8 rounded-full bg-[#51ff00] text-black flex items-center justify-center font-bold text-base">1</span>
           <div >
             <p>Download and run <a href="https://zadig.akeo.ie/" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline font-semibold">Zadig</a></p>
           </div>
         </div>
 
         <div className="flex gap-4">
-          <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[#51ff00] text-black flex items-center justify-center font-bold text-base">2</span>
+          <span className="shrink-0 w-8 h-8 rounded-full bg-[#51ff00] text-black flex items-center justify-center font-bold text-base">2</span>
           <div >
-            <p className="mb-2">Under <code className="bg-gray-200 px-1 rounded">Device</code> in the menu bar, select <code className="bg-gray-200 px-1 rounded">Create New Device</code></p>
+            <p className="mb-2">Under <code className="bg-gray-200 px-1 rounded-sm">Device</code> in the menu bar, select <code className="bg-gray-200 px-1 rounded-sm">Create New Device</code></p>
             <img src={zadigCreateNewDevice} alt="Zadig Create New Device" className="rounded-lg border border-gray-300" width={460} />
           </div>
         </div>
 
         <div className="flex gap-4">
-          <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[#51ff00] text-black flex items-center justify-center font-bold text-base">3</span>
+          <span className="shrink-0 w-8 h-8 rounded-full bg-[#51ff00] text-black flex items-center justify-center font-bold text-base">3</span>
           <div >
             <p className="mb-2">Fill in the form:</p>
             <ul className="list-none space-y-1 ml-2 mb-2">
-              <li><span className="text-gray-500 mr-2">a.</span>Name: <code className="bg-gray-200 px-1 rounded">Asius v0</code></li>
-              <li><span className="text-gray-500 mr-2">b.</span>USB ID: <code className="bg-gray-200 px-1 rounded">{vendorId}</code> and <code className="bg-gray-200 px-1 rounded">{PRODUCT_ID}</code></li>
+              <li><span className="text-gray-500 mr-2">a.</span>Name: <code className="bg-gray-200 px-1 rounded-sm">Asius v0</code></li>
+              <li><span className="text-gray-500 mr-2">b.</span>USB ID: <code className="bg-gray-200 px-1 rounded-sm">{vendorId}</code> and <code className="bg-gray-200 px-1 rounded-sm">{PRODUCT_ID}</code></li>
             </ul>
             <img src={zadigForm} alt="Zadig Form" className="rounded-lg border border-gray-300" width={460} />
           </div>
         </div>
 
         <div className="flex gap-4">
-          <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[#51ff00] text-black flex items-center justify-center font-bold text-base">4</span>
+          <span className="shrink-0 w-8 h-8 rounded-full bg-[#51ff00] text-black flex items-center justify-center font-bold text-base">4</span>
           <div >
-            <p>Click <code className="bg-gray-200 px-1 rounded">Install Driver</code></p>
+            <p>Click <code className="bg-gray-200 px-1 rounded-sm">Install Driver</code></p>
           </div>
         </div>
       </div>
@@ -475,7 +475,7 @@ function LinuxUnbind({ onNext }) {
         </pre>
         <button
           onClick={handleCopy}
-          className="absolute top-2 right-2 px-3 py-1 bg-blue-600 hover:bg-blue-500 active:bg-blue-400 text-white text-sm rounded transition-colors"
+          className="absolute top-2 right-2 px-3 py-1 bg-blue-600 hover:bg-blue-500 active:bg-blue-400 text-white text-sm rounded-sm transition-colors"
         >
           {copied ? 'Copied!' : 'Copy'}
         </button>
@@ -499,7 +499,7 @@ function FlashOption({ children, checked, onChange, disabled = false }) {
       <span className="relative flex shrink-0">
         <input type="checkbox" className="peer absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0 disabled:cursor-default" checked={checked} disabled={disabled} onChange={e => onChange(e.target.checked)} />
         <span className="h-7 w-12 rounded-full bg-gray-300 transition-colors peer-checked:bg-[#51ff00] peer-focus-visible:ring-2 peer-focus-visible:ring-black peer-focus-visible:ring-offset-2" />
-        <span className="absolute left-1 top-1 h-5 w-5 rounded-full bg-white shadow-sm transition-transform peer-checked:translate-x-5" />
+        <span className="absolute left-1 top-1 h-5 w-5 rounded-full bg-white shadow-xs transition-transform peer-checked:translate-x-5" />
       </span>
     </label>
   )
@@ -514,7 +514,7 @@ function WebUSBConnect({ onConnect, ready, flashVamos, setFlashVamos, flashUboot
       <div className="text-center">
         <h2 className="text-3xl font-bold mb-2">Select your device</h2>
         <p className="text-xl text-gray-600 max-w-lg">
-          Click the button below to open the device selector, then choose <code className="px-2 py-0.5 bg-[#51ff00] rounded font-mono text-black font-semibold">QUSB_BULK_CID</code> from the list.
+          Click the button below to open the device selector, then choose <code className="px-2 py-0.5 bg-[#51ff00] rounded-sm font-mono text-black font-semibold">QUSB_BULK_CID</code> from the list.
         </p>
       </div>
       <div className="w-full max-w-md text-left space-y-3">

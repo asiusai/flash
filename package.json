@@ -10,7 +10,8 @@
     "test": "vitest run",
     "check": "tsc --noEmit",
     "device-smoke": "node scripts/device-smoke.mjs",
-    "device-identify": "node scripts/device-identify.mjs"
+    "device-identify": "node scripts/device-identify.mjs",
+    "security:check": "bun audit"
   },
   "engines": {
     "node": ">=20.11.0"
@@ -18,8 +19,8 @@
   "dependencies": {
     "@fontsource-variable/inter": "5.2.5",
     "@fontsource-variable/jetbrains-mono": "5.2.5",
-    "react": "18.3.1",
-    "react-dom": "18.3.1",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
     "xz-decompress": "0.2.3",
     "lzma": "2.3.2"
   },
@@ -27,24 +28,22 @@
     "@tailwindcss/typography": "0.5.20",
     "@testing-library/jest-dom": "6.6.3",
     "@testing-library/react": "16.3.0",
-    "@types/react": "18.3.20",
-    "@types/react-dom": "18.3.6",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.7",
     "@vitejs/plugin-react": "5.1.2",
-    "autoprefixer": "10.6.1",
     "jsdom": "26.0.0",
-    "postcss": "8.5.31",
-    "tailwindcss": "3.4.17",
+    "tailwindcss": "4.3.3",
     "vite": "6.4.4",
-    "vitest": "4.1.11",
+    "vitest": "4.1.12",
     "typescript": "5.9.3",
     "@types/w3c-web-usb": "1.0.14",
     "@types/node": "22.19.15",
-    "playwright": "1.58.2"
+    "playwright": "1.58.2",
+    "@tailwindcss/vite": "4.3.3"
   },
-  "trustedDependencies": [
-    "esbuild"
-  ],
+  "trustedDependencies": [],
   "overrides": {
     "postcss-selector-parser": "7.1.7"
-  }
+  },
+  "packageManager": "bun@1.3.10"
 }
