@@ -5,7 +5,7 @@ Based on [commaai/flash](https://github.com/commaai/flash), with the upstream wi
 `https://flash.asius.ai` installs VamOS with WebUSB.
 See [the VamOS spec](https://github.com/asiusai/asius/blob/master/specs/vamos.md) for release and recovery requirements.
 
-The app verifies openpilot's signed VamOS reference.
+The app verifies openpilot's signed VamOS reference at `https://dist.asius.ai/openpilot/vamos.json`.
 It then selects the signed UFS factory manifest for that release.
 R2 stores content-addressed image blocks and the native openpilot archive.
 

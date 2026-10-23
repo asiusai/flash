@@ -6,7 +6,7 @@ import { initializePersist } from './persist'
 import type { DownloadTiming } from './manifest'
 import { installUboot, loadBootManifest, prepareUboot, readNorBackup, saveNorBackup } from './uboot'
 
-const OPENPILOT_VAMOS_URL = 'https://raw.githubusercontent.com/asiusai/openpilot/master/openpilot/system/hardware/v0/vamos.json'
+const VAMOS_MANIFEST_URL = 'https://dist.asius.ai/openpilot/vamos.json'
 
 export function factoryReleaseUrl(version: string, target: StorageTarget): string {
   return `https://dist.asius.ai/vamos/releases/${version}/flash-${target.label.toLowerCase()}.json`
@@ -55,7 +55,7 @@ export class BrowserFlasher {
       if (!navigator.usb) throw new Error('Use Chrome or Edge on a desktop computer with WebUSB support.')
       this.onStatus({ phase: 'release', detail: 'Preparing release...', progress: 0 })
       const localManifest = import.meta.env.DEV ? import.meta.env.VITE_FLASH_MANIFEST_URL : undefined
-      const url = localManifest || factoryReleaseUrl(await loadSignedVamosVersion(OPENPILOT_VAMOS_URL), target)
+      const url = localManifest || factoryReleaseUrl(await loadSignedVamosVersion(VAMOS_MANIFEST_URL), target)
       const manifest = await loadSignedManifest(url)
       if (manifest.sector_size !== target.sectorSize) throw new Error('The release does not match the selected storage type')
       const programmer = await downloadVerified(manifest.programmer.url, manifest.programmer.size, manifest.programmer.sha256)
