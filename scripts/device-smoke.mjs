@@ -28,7 +28,7 @@ try {
   // Test a signed candidate with the production bundle, without a live-reload server.
   if (process.env.FLASH_BOOT_MANIFEST) {
     const candidate = process.env.FLASH_BOOT_MANIFEST
-    await context.route('https://vamos.asius.ai/bootloader/uboot.json*', route => {
+    await context.route('https://dist.asius.ai/bootloader/uboot.json*', route => {
       const suffix = route.request().url().endsWith('.sig') ? '.sig' : ''
       return route.continue({ url: candidate + suffix })
     })

@@ -132,7 +132,7 @@ export type DownloadTiming = (bytes: number, seconds: number) => void
 
 async function fetchBytes(url: string, cache: RequestCache = 'no-store', onDownload?: DownloadTiming): Promise<Uint8Array> {
   const started = performance.now()
-  const requestUrl = import.meta.env.DEV && url.startsWith('https://vamos.asius.ai/') ? url.replace('https://vamos.asius.ai', '/__updates') : url
+  const requestUrl = import.meta.env.DEV && url.startsWith('https://dist.asius.ai/') ? url.replace('https://dist.asius.ai', '/__updates') : url
   const response = await fetch(requestUrl, { cache, mode: 'cors' })
   if (!response.ok) throw new Error(`Download failed (${response.status})`)
   const bytes = new Uint8Array(await response.arrayBuffer())

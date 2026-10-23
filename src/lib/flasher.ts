@@ -9,7 +9,7 @@ import { installUboot, loadBootManifest, prepareUboot, readNorBackup, saveNorBac
 const OPENPILOT_VAMOS_URL = 'https://raw.githubusercontent.com/asiusai/openpilot/master/openpilot/system/hardware/v0/vamos.json'
 
 export function factoryReleaseUrl(version: string, target: StorageTarget): string {
-  return `https://vamos.asius.ai/vamos/releases/${version}/flash-${target.label.toLowerCase()}.json`
+  return `https://dist.asius.ai/vamos/releases/${version}/flash-${target.label.toLowerCase()}.json`
 }
 
 function errorMessage(error: unknown): string {

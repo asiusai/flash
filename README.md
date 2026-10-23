@@ -44,7 +44,7 @@ Only UFS modules are supported.
 This diagnostic reads storage identity without erasing or programming storage:
 
 ```sh
-FLASH_MANIFEST_URL=https://vamos.asius.ai/vamos/releases/18.9/flash-ufs.json \
+FLASH_MANIFEST_URL=https://dist.asius.ai/vamos/releases/18.9/flash-ufs.json \
   bun run device-identify
 ```
 

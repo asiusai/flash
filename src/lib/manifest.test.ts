@@ -11,7 +11,7 @@ const program = {
   compression: 'xz' as const,
   compressed_size: 12,
   compressed_sha256: hash,
-  url: 'https://vamos.asius.ai/chunk.img.xz',
+  url: 'https://dist.asius.ai/chunk.img.xz',
 }
 const manifest: FlashManifestV3 = {
   manifest_version: 3,
@@ -33,7 +33,7 @@ const manifest: FlashManifestV3 = {
       operations: [{ ...program, offset: 16384 }],
     },
   },
-  programmer: { size: 10, sha256: hash, url: 'https://vamos.asius.ai/programmer.bin' },
+  programmer: { size: 10, sha256: hash, url: 'https://dist.asius.ai/programmer.bin' },
   storage_profiles: [
     {
       mem_type: 'UFS',

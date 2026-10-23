@@ -75,7 +75,7 @@ export function parseBootManifest(bytes: Uint8Array): BootManifest {
 }
 
 export async function loadBootManifest(): Promise<BootManifest> {
-  const url = (import.meta.env.DEV && import.meta.env.VITE_BOOTLOADER_MANIFEST_URL) || 'https://vamos.asius.ai/bootloader/uboot.json'
+  const url = (import.meta.env.DEV && import.meta.env.VITE_BOOTLOADER_MANIFEST_URL) || 'https://dist.asius.ai/bootloader/uboot.json'
   return parseBootManifest(await loadSignedBytes(url))
 }
 
