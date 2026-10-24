@@ -9,6 +9,12 @@ The app verifies openpilot's signed VamOS reference at `https://dist.asius.ai/op
 It then selects the signed UFS factory manifest for that release.
 R2 stores content-addressed image blocks and the native openpilot archive.
 
+## Deployment
+
+Cloudflare Pages builds `master` directly from `asiusai/flash` and serves `flash.asius.ai`.
+The pipeline installs frozen dependencies, checks types, runs tests and builds the production bundle.
+GitHub Actions does not build or deploy this web application.
+
 ## Development
 
 Run these commands in this repository:
