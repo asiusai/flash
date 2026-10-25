@@ -1,9 +1,8 @@
 import type { FlashManifest, FlashManifestV3, FlashOperation, StorageInfo, StorageProfile } from '../types'
 
-const PRODUCTION_UPDATE_PUBLIC_KEY_PEM = `-----BEGIN PUBLIC KEY-----
-MCowBQYDK2VwAyEA0b4xwr6nGSdOxGw+QJ5UAZxcFp6lawS4hS2XEEAmSfE=
------END PUBLIC KEY-----`
-const UPDATE_PUBLIC_KEY_PEM = import.meta.env.DEV && import.meta.env.VITE_FLASH_PUBLIC_KEY_PEM ? import.meta.env.VITE_FLASH_PUBLIC_KEY_PEM.replace(/\\n/g, '\n') : PRODUCTION_UPDATE_PUBLIC_KEY_PEM
+import { ml_dsa65 } from '@noble/post-quantum/ml-dsa.js'
+import { UPDATE_PUBLIC_KEY_BASE64 } from './update-key'
+const productionKey = Uint8Array.from(atob(UPDATE_PUBLIC_KEY_BASE64), character => character.charCodeAt(0))
 
 const HEX_256 = /^[0-9a-f]{64}$/
 
@@ -116,16 +115,10 @@ export function parseVamosVersion(bytes: Uint8Array): string {
   return value.version
 }
 
-function pemToDer(pem: string): Uint8Array {
-  const base64 = pem.replace(/-----[^-]+-----/g, '').replace(/\s/g, '')
-  return Uint8Array.from(atob(base64), (character) => character.charCodeAt(0))
-}
-
-async function verifySignature(payload: Uint8Array, signature: Uint8Array): Promise<void> {
-  assert(signature.byteLength === 64, 'signature must be 64 bytes')
-  const publicKey = await crypto.subtle.importKey('spki', new Uint8Array(pemToDer(UPDATE_PUBLIC_KEY_PEM)).buffer, 'Ed25519', false, ['verify'])
-  const valid = await crypto.subtle.verify('Ed25519', publicKey, new Uint8Array(signature).buffer, new Uint8Array(payload).buffer)
-  if (!valid) throw new Error('Flash manifest signature is invalid')
+export async function verifySignature(payload: Uint8Array, signature: Uint8Array, publicKey = productionKey): Promise<void> {
+  assert(signature.byteLength === 3309, 'signature must be 3309 bytes')
+  assert(publicKey.byteLength === 1952, 'invalid ML-DSA-65 release key')
+  if (!ml_dsa65.verify(signature, payload, publicKey)) throw new Error('Flash manifest signature is invalid')
 }
 
 export type DownloadTiming = (bytes: number, seconds: number) => void

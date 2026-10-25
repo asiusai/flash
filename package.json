@@ -22,7 +22,8 @@
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "xz-decompress": "0.2.3",
-    "lzma": "2.3.2"
+    "lzma": "2.3.2",
+    "@noble/post-quantum": "0.7.1"
   },
   "devDependencies": {
     "@tailwindcss/typography": "0.5.20",
