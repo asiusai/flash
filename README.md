@@ -3,7 +3,7 @@
 Based on [commaai/flash](https://github.com/commaai/flash), with the upstream wizard layout.
 
 `https://flash.asius.ai` installs VamOS with WebUSB.
-See [the VamOS spec](https://github.com/asiusai/asius/blob/master/specs/vamos.md) for release and recovery requirements.
+Release and recovery behavior is described below and in the [VamOS documentation](https://github.com/asiusai/vamos).
 
 The app verifies openpilot's signed VamOS reference at `https://dist.asius.ai/openpilot/vamos.json`.
 It then selects the signed UFS factory manifest for that release.
