@@ -1,5 +1,4 @@
 @import "tailwindcss" source("../");
-@plugin "@tailwindcss/typography";
 
 @theme {
   --font-sans: "Inter Variable", sans-serif;
